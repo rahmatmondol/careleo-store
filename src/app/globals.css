@@ -1,8 +1,23 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:is(.dark *));
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #fcf8ff;
+  --foreground: #1f1637;
+  --container-width: 1280px;
+  --brand-surface: #ffffff;
+  --brand-surface-soft: #f5efff;
+  --brand-line: #e8dcff;
+  --brand-primary: #7555bb;
+  --brand-primary-strong: #7555bb;
+  --brand-secondary: #8f5cff;
+  --brand-accent: #ff5ba7;
+  --brand-accent-soft: #ffe0ef;
+  --brand-warm: #f5d8aa;
+  --brand-warm-soft: #fff1d8;
+  --brand-ink-soft: #6d6585;
+  --brand-shadow: rgba(90, 49, 213, 0.16);
 }
 
 @theme inline {
@@ -10,17 +25,122 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --animate-fade-in: fade-in 0.6s ease-out forwards;
+  --animate-slide-up: slide-up 0.6s ease-out forwards;
+  --animate-badge-pop: badge-pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  --animate-float: float 3s ease-in-out infinite;
+  --animate-pulse-glow: pulse-glow 2s ease-in-out infinite;
+  --animate-marquee: marquee 25s linear infinite;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes badge-pop {
+  from { opacity: 0; transform: scale(0.8) translateY(12px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(249, 115, 22, 0.4); }
+  50% { box-shadow: 0 0 0 12px rgba(249, 115, 22, 0); }
+}
+
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
 }
 
 body {
-  background: var(--background);
+  background:
+    radial-gradient(circle at top left, rgba(143, 92, 255, 0.12), transparent 28%),
+    radial-gradient(circle at bottom right, rgba(255, 91, 167, 0.12), transparent 24%),
+    var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+}
+
+a,
+button,
+input,
+select {
+  transition:
+    color 0.2s ease,
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
+}
+
+.brand-text-gradient {
+  background-image: linear-gradient(135deg, var(--brand-primary-strong), var(--brand-secondary));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.brand-soft-panel {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(245, 239, 255, 0.92));
+  border: 1px solid var(--brand-line);
+  box-shadow: 0 20px 50px var(--brand-shadow);
+}
+
+.brand-chip {
+  background: rgba(143, 92, 255, 0.1);
+  border: 1px solid rgba(143, 92, 255, 0.18);
+  color: var(--brand-primary);
+}
+
+.brand-accent-chip {
+  background: var(--brand-accent-soft);
+  border: 1px solid rgba(255, 91, 167, 0.18);
+  color: #c2397f;
+}
+
+.brand-primary-button {
+  background: linear-gradient(135deg, var(--brand-primary), var(--brand-secondary));
+  box-shadow: 0 16px 35px rgba(90, 49, 213, 0.24);
+  color: #fff;
+}
+
+.brand-primary-button:hover {
+  background: linear-gradient(135deg, var(--brand-primary-strong), var(--brand-primary));
+  box-shadow: 0 20px 42px rgba(90, 49, 213, 0.28);
+}
+
+.brand-secondary-button {
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid var(--brand-line);
+  box-shadow: 0 10px 26px rgba(67, 33, 175, 0.08);
+  color: var(--brand-primary-strong);
+}
+
+.brand-secondary-button:hover {
+  background: rgba(245, 239, 255, 0.98);
+  border-color: rgba(143, 92, 255, 0.24);
+}
+
+.brand-input-shell {
+  border: 1px solid var(--brand-line);
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 10px 26px rgba(67, 33, 175, 0.06);
+}
+
+.brand-input-shell:focus-within {
+  border-color: rgba(143, 92, 255, 0.38);
+  box-shadow:
+    0 0 0 4px rgba(143, 92, 255, 0.12),
+    0 14px 28px rgba(67, 33, 175, 0.08);
 }
