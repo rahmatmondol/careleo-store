@@ -74,8 +74,8 @@ export default function ProductPage() {
     sliderRef.current.swiper.slideNext();
   }, []);
 
-  const currentPrice = isSubscribed ? (selectedSize.price * 0.8).toFixed(2) : selectedSize.price.toFixed(2);
-  const currentOldPrice = selectedSize.oldPrice.toFixed(2);
+  const currentPrice = isSubscribed ? (Number(selectedSize.price) * 0.8).toFixed(2) : Number(selectedSize.price).toFixed(2);
+  const currentOldPrice = Number(selectedSize.oldPrice).toFixed(2);
 
   return (
     <div className="min-h-screen bg-[var(--brand-surface)] dark:bg-gray-900 transition-colors duration-300">
@@ -165,8 +165,8 @@ export default function ProductPage() {
               </div>
               
               <div className="flex flex-wrap items-end gap-3 sm:gap-4 mb-4">
-                <span className="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white transition-all">${currentPrice}</span>
-                <span className="text-base sm:text-lg font-bold text-gray-400 line-through transition-all pb-0.5">${currentOldPrice}</span>
+                <span className="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white transition-all">${Number(currentPrice).toFixed(2)}</span>
+                <span className="text-base sm:text-lg font-bold text-gray-400 line-through transition-all pb-0.5">${Number(currentOldPrice).toFixed(2)}</span>
                 {isSubscribed && (
                   <span className="brand-accent-chip px-2.5 py-1 sm:px-3 rounded-full text-[10px] sm:text-xs font-bold animate-fade-in mb-1 sm:mb-1.5">
                     Save 20% with Care Leo+
@@ -212,7 +212,7 @@ export default function ProductPage() {
                       }`}
                     >
                       <span className="font-bold text-gray-900 dark:text-white">{size.id}</span>
-                      <span className="text-xs font-semibold text-gray-500 dark:text-gray-400">${size.price.toFixed(2)}</span>
+                      <span className="text-xs font-semibold text-gray-500 dark:text-gray-400">${Number(size.price).toFixed(2)}</span>
                       {size.save && (
                         <span className="text-[10px] font-bold text-pink-500 bg-pink-100 dark:bg-pink-900/30 px-2 py-0.5 rounded-full mt-1">
                           Save {size.save}

@@ -207,7 +207,7 @@ export default function CartPage() {
                           {/* Total */}
                           <div className="col-span-1 md:col-span-2 flex flex-col md:items-end items-end text-right">
                             <span className="md:hidden text-[10px] font-bold text-gray-400 uppercase mb-1">Total</span>
-                            <span className="font-black text-gray-900 dark:text-white text-base sm:text-lg">${(item.price * item.quantity).toFixed(2)}</span>
+                            <span className="font-black text-gray-900 dark:text-white text-base sm:text-lg">${(Number(item.price) * item.quantity).toFixed(2)}</span>
                             {item.originalPrice !== item.price && (
                               <span className="text-[10px] font-bold text-green-500 mt-1">You save ${((item.originalPrice - item.price) * item.quantity).toFixed(2)}</span>
                             )}

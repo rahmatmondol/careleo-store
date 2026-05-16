@@ -86,7 +86,7 @@ export default function CartSidebar({ open, onClose }: CartSidebarProps) {
                   {item.name}
                 </h4>
                 <p className="mt-1 text-sm font-black text-[var(--brand-primary)]">
-                  ${item.price.toFixed(2)}
+                  ${Number(item.price).toFixed(2)}
                 </p>
 
                 <div className="mt-3 flex items-center justify-between">

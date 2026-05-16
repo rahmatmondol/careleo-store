@@ -132,7 +132,7 @@ export default function OrdersTab() {
                     <span>•</span>
                     <span>{order.items.length} Items</span>
                     <span>•</span>
-                    <span className="font-bold text-[var(--foreground)] dark:text-white">${order.total.toFixed(2)}</span>
+                    <span className="font-bold text-[var(--foreground)] dark:text-white">${Number(order.total).toFixed(2)}</span>
                   </div>
                 </div>
               </div>
