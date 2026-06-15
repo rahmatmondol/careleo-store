@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -6,105 +8,22 @@ import {
   Bone, Cat, Dog, ShoppingBag, Scissors, Pill, Camera, Activity, 
   ChevronRight, Sparkles, Heart, Search, ArrowRight, MousePointerClick, Star
 } from "lucide-react";
+import { useCategories } from "@/lib/useStore";
 
-// Mock data for categories
-const ALL_CATEGORIES = [
-  { 
-    name: "Dog Food", 
-    desc: "Premium nutrition for all breeds",
-    icon: <Bone size={28} />, 
-    color: "bg-[var(--brand-surface-soft)] text-[var(--brand-primary)] border-[var(--brand-line)]",
-    hoverBg: "hover:bg-[var(--brand-primary)] hover:text-white hover:border-transparent",
-    itemCount: 342
-  },
-  { 
-    name: "Cat Food", 
-    desc: "Healthy & tasty meals for felines",
-    icon: <Cat size={28} />, 
-    color: "bg-[#fff0f7] text-[#c2397f] border-[rgba(255,91,167,0.18)]",
-    hoverBg: "hover:bg-[#ff5ba7] hover:text-white hover:border-transparent",
-    itemCount: 284
-  },
-  { 
-    name: "Toys", 
-    desc: "Fun & interactive playthings",
-    icon: <Dog size={28} />, 
-    color: "bg-[#f4f0ff] text-[#6d45d1] border-[#d8ccff]",
-    hoverBg: "hover:bg-[#8f5cff] hover:text-white hover:border-transparent",
-    itemCount: 512
-  },
-  { 
-    name: "Treats & Chews", 
-    desc: "Training rewards and snacks",
-    icon: <ShoppingBag size={28} />, 
-    color: "bg-[var(--brand-warm-soft)] text-[#8c5a16] border-[rgba(245,216,170,0.4)]",
-    hoverBg: "hover:bg-[#f5d8aa] hover:text-[#8c5a16] hover:border-transparent",
-    itemCount: 195
-  },
-  { 
-    name: "Grooming", 
-    desc: "Shampoos, brushes & spa essentials",
-    icon: <Scissors size={28} />, 
-    color: "bg-[#f7ebff] text-[#9146d8] border-[#ebd1ff]",
-    hoverBg: "hover:bg-[#b575ea] hover:text-white hover:border-transparent",
-    itemCount: 143
-  },
-  { 
-    name: "Health & Wellness", 
-    desc: "Vitamins, supplements & meds",
-    icon: <Pill size={28} />, 
-    color: "bg-[#effbfa] text-[#0d9488] border-[#ccfbf1]",
-    hoverBg: "hover:bg-[#14b8a6] hover:text-white hover:border-transparent",
-    itemCount: 218
-  },
-  { 
-    name: "Collars & Leashes", 
-    desc: "Walking gear and ID tags",
-    icon: <Activity size={28} />, 
-    color: "bg-[#f3edff] text-[var(--brand-secondary)] border-[var(--brand-line)]",
-    hoverBg: "hover:bg-[var(--brand-secondary)] hover:text-white hover:border-transparent",
-    itemCount: 176
-  },
-  { 
-    name: "Smart Gear", 
-    desc: "Cameras, feeders & tech for pets",
-    icon: <Camera size={28} />, 
-    color: "bg-[#f8f5ff] text-[#53358d] border-[#e8dcff]",
-    hoverBg: "hover:bg-[#53358d] hover:text-white hover:border-transparent",
-    itemCount: 45
-  },
-  { 
-    name: "Beds & Furniture", 
-    desc: "Cozy sleeping spots",
-    icon: <Heart size={28} />, 
-    color: "bg-[#fff5f5] text-[#e11d48] border-[#ffe4e6]",
-    hoverBg: "hover:bg-[#fb7185] hover:text-white hover:border-transparent",
-    itemCount: 124
-  },
-  { 
-    name: "Bowls & Feeders", 
-    desc: "Dining accessories",
-    icon: <MousePointerClick size={28} />, 
-    color: "bg-[#f0fdf4] text-[#0f766e] border-[#ccfbf1]",
-    hoverBg: "hover:bg-[#2dd4bf] hover:text-white hover:border-transparent",
-    itemCount: 89
-  },
-  { 
-    name: "Travel & Carriers", 
-    desc: "On-the-go essentials",
-    icon: <ArrowRight size={28} />, 
-    color: "bg-[#fdf4ff] text-[#a21caf] border-[#fae8ff]",
-    hoverBg: "hover:bg-[#e879f9] hover:text-white hover:border-transparent",
-    itemCount: 67
-  },
-  { 
-    name: "Clothing & Shoes", 
-    desc: "Apparel for all seasons",
-    icon: <Star size={28} />, 
-    color: "bg-[#fffbeb] text-[#b45309] border-[#fef3c7]",
-    hoverBg: "hover:bg-[#fbbf24] hover:text-white hover:border-transparent",
-    itemCount: 112
-  }
+// Visual presets cycled across real categories
+const CATEGORY_STYLES = [
+  { icon: <Bone size={28} />, color: "bg-[var(--brand-surface-soft)] text-[var(--brand-primary)] border-[var(--brand-line)]", hoverBg: "hover:bg-[var(--brand-primary)] hover:text-white hover:border-transparent" },
+  { icon: <Cat size={28} />, color: "bg-[#fff0f7] text-[#c2397f] border-[rgba(255,91,167,0.18)]", hoverBg: "hover:bg-[#ff5ba7] hover:text-white hover:border-transparent" },
+  { icon: <Dog size={28} />, color: "bg-[#f4f0ff] text-[#6d45d1] border-[#d8ccff]", hoverBg: "hover:bg-[#8f5cff] hover:text-white hover:border-transparent" },
+  { icon: <ShoppingBag size={28} />, color: "bg-[var(--brand-warm-soft)] text-[#8c5a16] border-[rgba(245,216,170,0.4)]", hoverBg: "hover:bg-[#f5d8aa] hover:text-[#8c5a16] hover:border-transparent" },
+  { icon: <Scissors size={28} />, color: "bg-[#f7ebff] text-[#9146d8] border-[#ebd1ff]", hoverBg: "hover:bg-[#b575ea] hover:text-white hover:border-transparent" },
+  { icon: <Pill size={28} />, color: "bg-[#effbfa] text-[#0d9488] border-[#ccfbf1]", hoverBg: "hover:bg-[#14b8a6] hover:text-white hover:border-transparent" },
+  { icon: <Activity size={28} />, color: "bg-[#f3edff] text-[var(--brand-secondary)] border-[var(--brand-line)]", hoverBg: "hover:bg-[var(--brand-secondary)] hover:text-white hover:border-transparent" },
+  { icon: <Camera size={28} />, color: "bg-[#f8f5ff] text-[#53358d] border-[#e8dcff]", hoverBg: "hover:bg-[#53358d] hover:text-white hover:border-transparent" },
+  { icon: <Heart size={28} />, color: "bg-[#fff5f5] text-[#e11d48] border-[#ffe4e6]", hoverBg: "hover:bg-[#fb7185] hover:text-white hover:border-transparent" },
+  { icon: <MousePointerClick size={28} />, color: "bg-[#f0fdf4] text-[#0f766e] border-[#ccfbf1]", hoverBg: "hover:bg-[#2dd4bf] hover:text-white hover:border-transparent" },
+  { icon: <ArrowRight size={28} />, color: "bg-[#fdf4ff] text-[#a21caf] border-[#fae8ff]", hoverBg: "hover:bg-[#e879f9] hover:text-white hover:border-transparent" },
+  { icon: <Star size={28} />, color: "bg-[#fffbeb] text-[#b45309] border-[#fef3c7]", hoverBg: "hover:bg-[#fbbf24] hover:text-white hover:border-transparent" },
 ];
 
 const PET_TYPES = [
@@ -117,6 +36,7 @@ const PET_TYPES = [
 ];
 
 export default function CategoriesPage() {
+  const { categories, loading } = useCategories();
   return (
     <div className="min-h-screen bg-[var(--background)]">
       <Navbar />
@@ -156,33 +76,41 @@ export default function CategoriesPage() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {ALL_CATEGORIES.map((cat) => (
-                <Link href="#" key={cat.name}>
-                  <div className="group flex flex-col h-full bg-white border border-gray-200 rounded-[15px] p-6 transition-all duration-300 hover:shadow-[0_20px_40px_rgba(90,49,213,0.12)] hover:-translate-y-2 cursor-pointer relative overflow-hidden">
-                    
-                    {/* Hover Background Tint */}
-                    <div className="absolute inset-0 bg-gradient-to-br from-[var(--brand-surface-soft)] to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100 z-0"></div>
+              {loading ? (
+                Array.from({ length: 8 }).map((_, i) => (
+                  <div key={i} className="h-48 animate-pulse rounded-[15px] bg-[var(--brand-surface-soft)]" />
+                ))
+              ) : categories.length === 0 ? (
+                <p className="col-span-full py-12 text-center text-gray-500">No categories available yet.</p>
+              ) : (
+                categories.map((cat, idx) => {
+                  const style = CATEGORY_STYLES[idx % CATEGORY_STYLES.length];
+                  return (
+                    <Link href={`/categories/${cat.slug}`} key={cat.id}>
+                      <div className="group flex flex-col h-full bg-white border border-gray-200 rounded-[15px] p-6 transition-all duration-300 hover:shadow-[0_20px_40px_rgba(90,49,213,0.12)] hover:-translate-y-2 cursor-pointer relative overflow-hidden">
 
-                    <div className="relative z-10 flex justify-between items-start mb-6">
-                      <div className={`w-16 h-16 rounded-[15px] flex items-center justify-center transition-all duration-300 ${cat.color} ${cat.hoverBg} group-hover:-rotate-6 group-hover:scale-110 shadow-sm`}>
-                        {cat.icon}
+                        {/* Hover Background Tint */}
+                        <div className="absolute inset-0 bg-gradient-to-br from-[var(--brand-surface-soft)] to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100 z-0"></div>
+
+                        <div className="relative z-10 flex justify-between items-start mb-6">
+                          <div className={`w-16 h-16 rounded-[15px] flex items-center justify-center transition-all duration-300 ${style.color} ${style.hoverBg} group-hover:-rotate-6 group-hover:scale-110 shadow-sm`}>
+                            {style.icon}
+                          </div>
+                        </div>
+
+                        <div className="relative z-10 mt-auto">
+                          <h3 className="text-xl font-black text-gray-900 mb-2 group-hover:text-[var(--brand-primary)] transition-colors">{cat.name}</h3>
+                          <p className="text-sm font-medium text-gray-500 mb-6 line-clamp-2">{cat.description || `Explore ${cat.name}`}</p>
+
+                          <div className="flex items-center text-sm font-bold text-[var(--brand-primary)] group-hover:text-[var(--brand-primary-strong)]">
+                            Explore Category <ArrowRight size={16} className="ml-1.5 transition-transform group-hover:translate-x-1.5" />
+                          </div>
+                        </div>
                       </div>
-                      <span className="text-xs font-bold text-gray-400 bg-gray-50 px-3 py-1.5 rounded-full group-hover:bg-white group-hover:text-[var(--brand-primary)] group-hover:shadow-sm transition-all">
-                        {cat.itemCount} items
-                      </span>
-                    </div>
-                    
-                    <div className="relative z-10 mt-auto">
-                      <h3 className="text-xl font-black text-gray-900 mb-2 group-hover:text-[var(--brand-primary)] transition-colors">{cat.name}</h3>
-                      <p className="text-sm font-medium text-gray-500 mb-6 line-clamp-2">{cat.desc}</p>
-                      
-                      <div className="flex items-center text-sm font-bold text-[var(--brand-primary)] group-hover:text-[var(--brand-primary-strong)]">
-                        Explore Category <ArrowRight size={16} className="ml-1.5 transition-transform group-hover:translate-x-1.5" />
-                      </div>
-                    </div>
-                  </div>
-                </Link>
-              ))}
+                    </Link>
+                  );
+                })
+              )}
             </div>
           </div>
           

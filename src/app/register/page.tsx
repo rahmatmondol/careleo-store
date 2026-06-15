@@ -3,11 +3,52 @@
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { User, Mail, Lock, Eye, EyeOff, ArrowLeft } from "lucide-react";
 
 export default function RegisterPage() {
+  const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+
+    if (password !== confirmPassword) {
+      setError("Passwords do not match");
+      return;
+    }
+
+    const parts = fullName.trim().split(/\s+/);
+    const firstName = parts[0] || "";
+    const lastName = parts.slice(1).join(" ") || "User";
+
+    setLoading(true);
+    try {
+      const res = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ firstName, lastName, email, password }),
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(json?.error || "Registration failed");
+      }
+      router.push("/dashboard");
+      router.refresh();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Registration failed");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[var(--background)] dark:bg-gray-900 transition-colors duration-300 font-sans flex flex-col relative">
@@ -44,8 +85,14 @@ export default function RegisterPage() {
 
           {/* Form Card */}
           <div className="bg-[var(--brand-surface)] dark:bg-gray-950 rounded-2xl p-6 sm:p-8 border border-[var(--brand-line)] dark:border-gray-800 shadow-sm">
-            <form onSubmit={(e) => e.preventDefault()} className="flex flex-col gap-5">
+            <form onSubmit={handleSubmit} className="flex flex-col gap-5">
               
+              {error && (
+                <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 px-4 py-3 rounded-xl text-sm">
+                  {error}
+                </div>
+              )}
+
               {/* Full Name */}
               <div className="flex flex-col gap-1.5">
                 <label className="text-xs font-bold text-[var(--brand-ink-soft)] dark:text-gray-400">Full Name</label>
@@ -53,6 +100,8 @@ export default function RegisterPage() {
                   <User size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--brand-ink-soft)] opacity-70" />
                   <input 
                     type="text" 
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
                     placeholder="John Doe" 
                     className="w-full border border-[var(--brand-line)] dark:border-gray-700 rounded-xl py-3 pl-10 pr-4 text-sm text-[var(--foreground)] dark:text-white focus:outline-none focus:border-[var(--brand-primary)] focus:ring-1 focus:ring-[var(--brand-primary)] transition-all bg-[var(--background)] dark:bg-gray-900"
                     required
@@ -67,6 +116,8 @@ export default function RegisterPage() {
                   <Mail size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--brand-ink-soft)] opacity-70" />
                   <input 
                     type="email" 
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
                     placeholder="hello@careleo.com" 
                     className="w-full border border-[var(--brand-line)] dark:border-gray-700 rounded-xl py-3 pl-10 pr-4 text-sm text-[var(--foreground)] dark:text-white focus:outline-none focus:border-[var(--brand-primary)] focus:ring-1 focus:ring-[var(--brand-primary)] transition-all bg-[var(--background)] dark:bg-gray-900"
                     required
@@ -81,6 +132,8 @@ export default function RegisterPage() {
                   <Lock size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--brand-ink-soft)] opacity-70" />
                   <input 
                     type={showPassword ? "text" : "password"} 
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
                     placeholder="Create a password" 
                     className="w-full border border-[var(--brand-line)] dark:border-gray-700 rounded-xl py-3 pl-10 pr-10 text-sm text-[var(--foreground)] dark:text-white focus:outline-none focus:border-[var(--brand-primary)] focus:ring-1 focus:ring-[var(--brand-primary)] transition-all bg-[var(--background)] dark:bg-gray-900"
                     required
@@ -102,6 +155,8 @@ export default function RegisterPage() {
                   <Lock size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--brand-ink-soft)] opacity-70" />
                   <input 
                     type={showConfirmPassword ? "text" : "password"} 
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
                     placeholder="Confirm your password" 
                     className="w-full border border-[var(--brand-line)] dark:border-gray-700 rounded-xl py-3 pl-10 pr-10 text-sm text-[var(--foreground)] dark:text-white focus:outline-none focus:border-[var(--brand-primary)] focus:ring-1 focus:ring-[var(--brand-primary)] transition-all bg-[var(--background)] dark:bg-gray-900"
                     required
@@ -119,9 +174,10 @@ export default function RegisterPage() {
               {/* Sign Up Button */}
               <button 
                 type="submit"
-                className="w-full py-3.5 mt-4 bg-[var(--brand-primary)] hover:opacity-90 text-white rounded-xl font-bold text-base transition-all shadow-sm active:scale-[0.98]"
+                disabled={loading}
+                className="w-full py-3.5 mt-4 bg-[var(--brand-primary)] hover:opacity-90 text-white rounded-xl font-bold text-base transition-all shadow-sm active:scale-[0.98] disabled:opacity-60"
               >
-                Create Account
+                {loading ? "Creating Account..." : "Create Account"}
               </button>
 
               <p className="text-xs text-center text-[var(--brand-ink-soft)] mt-2">

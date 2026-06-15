@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { 
@@ -9,12 +10,33 @@ import {
   Truck, RotateCcw, ShieldCheck, HeadphonesIcon,
   Check, Info, Package, Edit2, ArrowLeft, ChevronDown, Sparkles, CreditCard, Banknote
 } from "lucide-react";
+import { useCart } from "@/lib/CartContext";
 
 export default function CheckoutPage() {
+  const router = useRouter();
+  const { items, count, subtotal, checkout } = useCart();
   const [shippingMethod, setShippingMethod] = useState("standard");
   const [paymentMethod, setPaymentMethod] = useState("card");
   const [saveAddress, setSaveAddress] = useState(true);
   const [addCareLeoPlus, setAddCareLeoPlus] = useState(false);
+  const [placing, setPlacing] = useState(false);
+  const [error, setError] = useState("");
+
+  const shippingCost = shippingMethod === "express" ? 4.99 : shippingMethod === "sameday" ? 9.99 : 0;
+  const estimatedTax = subtotal * 0.08;
+  const total = subtotal + estimatedTax + shippingCost;
+
+  const placeOrder = async () => {
+    setError("");
+    setPlacing(true);
+    const res = await checkout();
+    setPlacing(false);
+    if (res.ok) {
+      router.push("/dashboard");
+    } else {
+      setError(res.error || "Checkout failed");
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50/30 dark:bg-gray-900 transition-colors duration-300 font-sans">
@@ -291,7 +313,7 @@ export default function CheckoutPage() {
             <div className="w-full lg:w-[400px]">
               <div className="bg-white dark:bg-gray-950 rounded-2xl p-6 border border-gray-200 dark:border-gray-800 sticky top-28 shadow-sm">
                 <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-lg font-bold text-gray-900 dark:text-white">Order Summary (3 items)</h2>
+                  <h2 className="text-lg font-bold text-gray-900 dark:text-white">Order Summary ({count} items)</h2>
                   <Link href="/cart" className="flex items-center gap-1 px-3 py-1.5 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors">
                     <Edit2 size={12} /> Edit Cart
                   </Link>
@@ -299,51 +321,31 @@ export default function CheckoutPage() {
                 
                 {/* Items list */}
                 <div className="flex flex-col gap-5 mb-6">
-                  {/* Item 1 */}
-                  <div className="flex gap-4">
-                    <div className="w-16 h-16 bg-gray-50 dark:bg-gray-900 rounded-lg flex items-center justify-center shrink-0 border border-gray-100 dark:border-gray-800">
-                      <Package size={24} className="text-gray-300" />
-                    </div>
-                    <div className="flex-1 flex flex-col justify-center">
-                      <h4 className="font-bold text-gray-900 dark:text-white text-xs line-clamp-2 mb-1">Care Leo Salmon Recipe Adult Dog Food – 2kg</h4>
-                      <div className="flex items-center gap-1 text-[10px] text-gray-500 bg-gray-50 dark:bg-gray-900 w-fit px-2 py-0.5 rounded border border-gray-200 dark:border-gray-700">
-                        Qty: 1 <ChevronDown size={10} />
+                  {items.length === 0 ? (
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Your cart is empty.</p>
+                  ) : (
+                    items.map((it) => (
+                      <div key={it.id} className="flex gap-4">
+                        <div className="w-16 h-16 bg-gray-50 dark:bg-gray-900 rounded-lg flex items-center justify-center shrink-0 border border-gray-100 dark:border-gray-800 overflow-hidden">
+                          {it.product?.imageUrl ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src={it.product.imageUrl} alt={it.product?.name ?? ""} className="w-full h-full object-cover" />
+                          ) : (
+                            <Package size={24} className="text-gray-300" />
+                          )}
+                        </div>
+                        <div className="flex-1 flex flex-col justify-center">
+                          <h4 className="font-bold text-gray-900 dark:text-white text-xs line-clamp-2 mb-1">{it.product?.name ?? "Product"}</h4>
+                          <div className="flex items-center gap-1 text-[10px] text-gray-500 bg-gray-50 dark:bg-gray-900 w-fit px-2 py-0.5 rounded border border-gray-200 dark:border-gray-700">
+                            Qty: {it.quantity}
+                          </div>
+                        </div>
+                        <div className="font-bold text-gray-900 dark:text-white text-sm">
+                          ${(Number(it.product?.price ?? 0) * it.quantity).toFixed(2)}
+                        </div>
                       </div>
-                    </div>
-                    <div className="font-bold text-gray-900 dark:text-white text-sm">
-                      $24.99
-                    </div>
-                  </div>
-                  {/* Item 2 */}
-                  <div className="flex gap-4">
-                    <div className="w-16 h-16 bg-gray-50 dark:bg-gray-900 rounded-lg flex items-center justify-center shrink-0 border border-gray-100 dark:border-gray-800">
-                      <Package size={24} className="text-gray-300" />
-                    </div>
-                    <div className="flex-1 flex flex-col justify-center">
-                      <h4 className="font-bold text-gray-900 dark:text-white text-xs line-clamp-2 mb-1">Greenies Original Regular Dental Treats – 340g</h4>
-                      <div className="flex items-center gap-1 text-[10px] text-gray-500 bg-gray-50 dark:bg-gray-900 w-fit px-2 py-0.5 rounded border border-gray-200 dark:border-gray-700">
-                        Qty: 1 <ChevronDown size={10} />
-                      </div>
-                    </div>
-                    <div className="font-bold text-gray-900 dark:text-white text-sm">
-                      $16.99
-                    </div>
-                  </div>
-                  {/* Item 3 */}
-                  <div className="flex gap-4">
-                    <div className="w-16 h-16 bg-gray-50 dark:bg-gray-900 rounded-lg flex items-center justify-center shrink-0 border border-gray-100 dark:border-gray-800">
-                      <Package size={24} className="text-gray-300" />
-                    </div>
-                    <div className="flex-1 flex flex-col justify-center">
-                      <h4 className="font-bold text-gray-900 dark:text-white text-xs line-clamp-2 mb-1">Care Leo Octopus Plush Toy for Dogs</h4>
-                      <div className="flex items-center gap-1 text-[10px] text-gray-500 bg-gray-50 dark:bg-gray-900 w-fit px-2 py-0.5 rounded border border-gray-200 dark:border-gray-700">
-                        Qty: 1 <ChevronDown size={10} />
-                      </div>
-                    </div>
-                    <div className="font-bold text-gray-900 dark:text-white text-sm">
-                      $12.99
-                    </div>
-                  </div>
+                    ))
+                  )}
                 </div>
 
                 <div className="h-px bg-gray-200 dark:bg-gray-800 w-full mb-5"></div>
@@ -351,37 +353,42 @@ export default function CheckoutPage() {
                 <div className="flex flex-col gap-3 text-sm text-gray-600 dark:text-gray-400 mb-5">
                   <div className="flex justify-between items-center">
                     <span>Subtotal</span>
-                    <span className="font-bold text-gray-900 dark:text-white">$54.97</span>
-                  </div>
-                  
-                  <div className="flex justify-between items-center text-green-600 dark:text-green-500">
-                    <span>Care Leo+ Discount (20%)</span>
-                    <span className="font-bold">-$10.50</span>
+                    <span className="font-bold text-gray-900 dark:text-white">${subtotal.toFixed(2)}</span>
                   </div>
                   
                   <div className="flex justify-between items-center">
                     <div className="flex items-center gap-1">
                       <span>Shipping</span> <Info size={12} className="text-gray-400" />
                     </div>
-                    <span className="font-bold text-green-600 dark:text-green-500 uppercase">Free</span>
+                    <span className="font-bold text-green-600 dark:text-green-500 uppercase">{shippingCost === 0 ? "Free" : `$${shippingCost.toFixed(2)}`}</span>
                   </div>
                   
                   <div className="flex justify-between items-center">
                     <div className="flex items-center gap-1">
                       <span>Estimated Tax</span> <Info size={12} className="text-gray-400" />
                     </div>
-                    <span className="font-bold text-gray-900 dark:text-white">$3.90</span>
+                    <span className="font-bold text-gray-900 dark:text-white">${estimatedTax.toFixed(2)}</span>
                   </div>
                 </div>
 
                 <div className="flex justify-between items-center mb-4 pt-4 border-t border-gray-200 dark:border-gray-800">
                   <span className="text-lg font-bold text-gray-900 dark:text-white">Total</span>
-                  <span className="text-2xl font-bold text-gray-900 dark:text-white">$48.37</span>
+                  <span className="text-2xl font-bold text-gray-900 dark:text-white">${total.toFixed(2)}</span>
                 </div>
 
-                <div className="bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 text-xs font-medium p-3 rounded-lg flex items-center gap-2 mb-6">
-                  <Sparkles size={14} /> You're saving $10.50 with Care Leo+ 🎉
-                </div>
+                {error && (
+                  <div className="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-xs font-medium p-3 rounded-lg mb-4">
+                    {error}
+                  </div>
+                )}
+
+                <button
+                  onClick={placeOrder}
+                  disabled={placing || items.length === 0}
+                  className="w-full h-14 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-bold text-base flex items-center justify-center gap-2 transition-colors mb-6 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <Lock size={18} /> {placing ? "Placing order..." : "Place Order"}
+                </button>
 
                 {/* Upsell / Subscribe Box */}
                 <div className="border border-orange-200 dark:border-orange-900/50 bg-orange-50/50 dark:bg-orange-900/10 rounded-xl p-5">

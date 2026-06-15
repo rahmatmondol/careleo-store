@@ -1,8 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import Link from "next/link";
-import Image from "next/image";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import OrdersTab from "@/components/dashboard/OrdersTab";
@@ -10,6 +9,7 @@ import SubscriptionsTab from "@/components/dashboard/SubscriptionsTab";
 import PetsTab from "@/components/dashboard/PetsTab";
 import AddressesTab from "@/components/dashboard/AddressesTab";
 import AccountTab from "@/components/dashboard/AccountTab";
+import { useAuth } from "@/lib/useAuth";
 import { 
   LayoutDashboard, 
   Package, 
@@ -20,12 +20,45 @@ import {
   LogOut, 
   ChevronRight,
   Sparkles,
-  CreditCard,
   Clock
 } from "lucide-react";
 
+type Order = {
+  id: string;
+  totalAmount: number | string;
+  status: string;
+  createdAt: string;
+};
+
 export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState("dashboard");
+  const { user, loading, logout } = useAuth();
+  const router = useRouter();
+  const [orders, setOrders] = useState<Order[]>([]);
+
+  useEffect(() => {
+    if (!loading && !user) router.push("/login");
+  }, [loading, user, router]);
+
+  useEffect(() => {
+    fetch("/api/orders")
+      .then((r) => r.json())
+      .then((json) => setOrders(Array.isArray(json?.orders) ? json.orders : []))
+      .catch(() => {});
+  }, []);
+
+  const handleLogout = async () => {
+    await logout();
+    router.push("/");
+  };
+
+  const fullName = user ? `${user.firstName} ${user.lastName}`.trim() : "Guest";
+  const initials = user
+    ? `${user.firstName?.[0] ?? ""}${user.lastName?.[0] ?? ""}`.toUpperCase() || "U"
+    : "U";
+
+  const formatDate = (value: string) =>
+    value ? new Date(value).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" }) : "";
 
   const menuItems = [
     { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -60,10 +93,10 @@ export default function DashboardPage() {
               <div className="p-6 border-b border-[var(--brand-line)] dark:border-gray-800 bg-[var(--brand-surface-soft)] dark:bg-gray-900/50">
                 <div className="flex items-center gap-4">
                   <div className="w-14 h-14 rounded-full bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center text-orange-500 font-black text-xl shrink-0">
-                    JD
+                    {initials}
                   </div>
                   <div>
-                    <h3 className="font-bold text-[var(--foreground)] dark:text-white">John Doe</h3>
+                    <h3 className="font-bold text-[var(--foreground)] dark:text-white">{fullName}</h3>
                     <div className="flex items-center gap-1 mt-1">
                       <Sparkles size={12} className="text-orange-500" />
                       <span className="text-xs font-bold text-orange-500">Care Leo+ Member</span>
@@ -97,7 +130,7 @@ export default function DashboardPage() {
               </nav>
 
               <div className="p-3 border-t border-[var(--brand-line)] dark:border-gray-800">
-                <button className="flex items-center gap-3 w-full p-3 rounded-xl transition-all text-sm font-semibold text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30">
+                <button onClick={handleLogout} className="flex items-center gap-3 w-full p-3 rounded-xl transition-all text-sm font-semibold text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30">
                   <LogOut size={18} className="opacity-70" />
                   Sign Out
                 </button>
@@ -114,13 +147,13 @@ export default function DashboardPage() {
                 <div className="bg-gradient-to-br from-[var(--brand-primary)] to-[var(--brand-secondary)] rounded-3xl p-6 md:p-8 text-white shadow-xl shadow-[var(--brand-shadow)] relative overflow-hidden">
                   <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -mr-20 -mt-20"></div>
                   <div className="relative z-10">
-                    <h2 className="text-2xl md:text-3xl font-black mb-2">Hello, John! 👋</h2>
+                    <h2 className="text-2xl md:text-3xl font-black mb-2">Hello, {user?.firstName ?? "there"}! 👋</h2>
                     <p className="text-white/80 mb-6 max-w-md">Your Care Leo+ subscription is active. You are saving 20% on all eligible orders and enjoying free shipping.</p>
                     
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                       <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-4">
                         <div className="text-white/60 text-xs font-bold uppercase tracking-wider mb-1">Total Orders</div>
-                        <div className="text-2xl font-black">12</div>
+                        <div className="text-2xl font-black">{orders.length}</div>
                       </div>
                       <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-4">
                         <div className="text-white/60 text-xs font-bold uppercase tracking-wider mb-1">Points Earned</div>
@@ -148,39 +181,30 @@ export default function DashboardPage() {
                     </div>
                     
                     <div className="space-y-4">
-                      {/* Dummy Order 1 */}
-                      <div className="flex items-center gap-4 pb-4 border-b border-[var(--brand-line)] dark:border-gray-800">
-                        <div className="w-12 h-12 rounded-xl bg-gray-100 dark:bg-gray-900 flex items-center justify-center shrink-0">
-                          <Package size={20} className="text-gray-500" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center justify-between mb-1">
-                            <span className="font-bold text-sm text-[var(--foreground)] dark:text-white truncate">Order #ORD-8472</span>
-                            <span className="text-xs font-bold text-green-600 bg-green-100 dark:bg-green-900/30 px-2 py-0.5 rounded-full">Delivered</span>
-                          </div>
-                          <div className="flex items-center justify-between text-xs text-[var(--brand-ink-soft)] dark:text-gray-400">
-                            <span>May 10, 2026</span>
-                            <span className="font-semibold text-[var(--foreground)] dark:text-gray-300">$48.37</span>
-                          </div>
-                        </div>
-                      </div>
-                      
-                      {/* Dummy Order 2 */}
-                      <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-xl bg-gray-100 dark:bg-gray-900 flex items-center justify-center shrink-0">
-                          <Clock size={20} className="text-orange-500" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center justify-between mb-1">
-                            <span className="font-bold text-sm text-[var(--foreground)] dark:text-white truncate">Order #ORD-8499</span>
-                            <span className="text-xs font-bold text-orange-600 bg-orange-100 dark:bg-orange-900/30 px-2 py-0.5 rounded-full">Processing</span>
-                          </div>
-                          <div className="flex items-center justify-between text-xs text-[var(--brand-ink-soft)] dark:text-gray-400">
-                            <span>May 12, 2026</span>
-                            <span className="font-semibold text-[var(--foreground)] dark:text-gray-300">$85.20</span>
-                          </div>
-                        </div>
-                      </div>
+                      {orders.length === 0 ? (
+                        <p className="text-sm text-[var(--brand-ink-soft)] dark:text-gray-400 py-4">No orders yet.</p>
+                      ) : (
+                        orders.slice(0, 3).map((order, idx) => {
+                          const delivered = order.status === "DELIVERED";
+                          return (
+                            <div key={order.id} className={`flex items-center gap-4 ${idx < Math.min(orders.length, 3) - 1 ? "pb-4 border-b border-[var(--brand-line)] dark:border-gray-800" : ""}`}>
+                              <div className="w-12 h-12 rounded-xl bg-gray-100 dark:bg-gray-900 flex items-center justify-center shrink-0">
+                                {delivered ? <Package size={20} className="text-gray-500" /> : <Clock size={20} className="text-orange-500" />}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center justify-between mb-1">
+                                  <span className="font-bold text-sm text-[var(--foreground)] dark:text-white truncate">Order #{order.id.slice(0, 8)}</span>
+                                  <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${delivered ? "text-green-600 bg-green-100 dark:bg-green-900/30" : "text-orange-600 bg-orange-100 dark:bg-orange-900/30"}`}>{order.status}</span>
+                                </div>
+                                <div className="flex items-center justify-between text-xs text-[var(--brand-ink-soft)] dark:text-gray-400">
+                                  <span>{formatDate(order.createdAt)}</span>
+                                  <span className="font-semibold text-[var(--foreground)] dark:text-gray-300">${Number(order.totalAmount).toFixed(2)}</span>
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })
+                      )}
                     </div>
                   </div>
 

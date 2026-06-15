@@ -1,8 +1,28 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { User, Mail, Phone, Lock, Save, Camera } from "lucide-react";
+import { useAuth } from "@/lib/useAuth";
 
 export default function AccountTab() {
+  const { user } = useAuth();
+  const [form, setForm] = useState({ firstName: "", lastName: "", email: "", phone: "" });
+
+  useEffect(() => {
+    if (user) {
+      setForm({
+        firstName: user.firstName ?? "",
+        lastName: user.lastName ?? "",
+        email: user.email ?? "",
+        phone: user.phone ?? "",
+      });
+    }
+  }, [user]);
+
+  const initials = user
+    ? `${user.firstName?.[0] ?? ""}${user.lastName?.[0] ?? ""}`.toUpperCase() || "U"
+    : "U";
+
   return (
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-300 max-w-3xl">
       <h2 className="text-2xl font-black text-[var(--foreground)] dark:text-white mb-6">Account Details</h2>
@@ -13,7 +33,7 @@ export default function AccountTab() {
         <div className="flex flex-col md:flex-row gap-8">
           <div className="flex flex-col items-center gap-4 shrink-0">
             <div className="w-24 h-24 rounded-full bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center text-orange-500 font-black text-3xl relative group">
-              JD
+              {initials}
               <button className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity">
                 <Camera size={24} />
               </button>
@@ -31,7 +51,8 @@ export default function AccountTab() {
                   <User size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--brand-ink-soft)] opacity-70" />
                   <input 
                     type="text" 
-                    defaultValue="John"
+                    value={form.firstName}
+                    onChange={(e) => setForm({ ...form, firstName: e.target.value })}
                     className="w-full border border-[var(--brand-line)] dark:border-gray-700 rounded-xl py-3 pl-10 pr-4 text-sm text-[var(--foreground)] dark:text-white focus:outline-none focus:border-[var(--brand-primary)] focus:ring-1 focus:ring-[var(--brand-primary)] transition-all bg-[var(--background)] dark:bg-gray-900"
                   />
                 </div>
@@ -42,7 +63,8 @@ export default function AccountTab() {
                   <User size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--brand-ink-soft)] opacity-70" />
                   <input 
                     type="text" 
-                    defaultValue="Doe"
+                    value={form.lastName}
+                    onChange={(e) => setForm({ ...form, lastName: e.target.value })}
                     className="w-full border border-[var(--brand-line)] dark:border-gray-700 rounded-xl py-3 pl-10 pr-4 text-sm text-[var(--foreground)] dark:text-white focus:outline-none focus:border-[var(--brand-primary)] focus:ring-1 focus:ring-[var(--brand-primary)] transition-all bg-[var(--background)] dark:bg-gray-900"
                   />
                 </div>
@@ -55,7 +77,8 @@ export default function AccountTab() {
                 <Mail size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--brand-ink-soft)] opacity-70" />
                 <input 
                   type="email" 
-                  defaultValue="hello@careleo.com"
+                  value={form.email}
+                  onChange={(e) => setForm({ ...form, email: e.target.value })}
                   className="w-full border border-[var(--brand-line)] dark:border-gray-700 rounded-xl py-3 pl-10 pr-4 text-sm text-[var(--foreground)] dark:text-white focus:outline-none focus:border-[var(--brand-primary)] focus:ring-1 focus:ring-[var(--brand-primary)] transition-all bg-[var(--background)] dark:bg-gray-900"
                 />
               </div>
@@ -67,7 +90,8 @@ export default function AccountTab() {
                 <Phone size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--brand-ink-soft)] opacity-70" />
                 <input 
                   type="tel" 
-                  defaultValue="+1 (555) 123-4567"
+                  value={form.phone}
+                  onChange={(e) => setForm({ ...form, phone: e.target.value })}
                   className="w-full border border-[var(--brand-line)] dark:border-gray-700 rounded-xl py-3 pl-10 pr-4 text-sm text-[var(--foreground)] dark:text-white focus:outline-none focus:border-[var(--brand-primary)] focus:ring-1 focus:ring-[var(--brand-primary)] transition-all bg-[var(--background)] dark:bg-gray-900"
                 />
               </div>

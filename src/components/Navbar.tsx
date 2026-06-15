@@ -8,6 +8,7 @@ import CartSidebar from "./CartSidebar";
 import NextLink from "next/link";
 import DesktopSearch from "./navbar/DesktopSearch";
 import MobileSearch from "./navbar/MobileSearch";
+import { useCart } from "@/lib/CartContext";
 
 const navItems = [
   "Shop",
@@ -27,6 +28,7 @@ const mockProducts = [
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
+  const { count } = useCart();
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
@@ -106,9 +108,11 @@ export default function Navbar() {
               className="relative flex h-11 w-11 items-center justify-center rounded-full border border-[var(--brand-line)] bg-white hover:bg-[var(--brand-surface-soft)] transition-colors"
             >
               <ShoppingCart size={20} className="text-gray-700" />
-              <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full border-2 border-white bg-[var(--brand-accent)] text-[10px] font-bold text-white">
-                2
-              </span>
+              {count > 0 && (
+                <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full border-2 border-white bg-[var(--brand-accent)] text-[10px] font-bold text-white">
+                  {count}
+                </span>
+              )}
             </button>
 
             <button className="hidden px-2 text-sm font-bold text-gray-700 hover:text-[var(--brand-primary)] transition-colors sm:block">

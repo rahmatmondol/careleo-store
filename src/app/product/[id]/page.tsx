@@ -1,10 +1,13 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
+import { useParams, useRouter } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ProductCard from "@/components/ProductCard";
 import ProductReviews from "@/components/ProductReviews";
+import type { StoreProduct } from "@/lib/useStore";
+import { useCart } from "@/lib/CartContext";
 import { 
   ChevronRight, ChevronLeft, Star, Check, ChevronDown, Package, ShieldCheck, Truck, 
   RotateCcw, Lock, Clock, Droplets, Leaf, Activity, Camera 
@@ -54,11 +57,47 @@ const DUMMY_REVIEWS = [
 ];
 
 export default function ProductPage() {
+  const params = useParams();
+  const router = useRouter();
+  const { addItem } = useCart();
+  const productId = String(params?.id || "");
+  const [product, setProduct] = useState<StoreProduct | null>(null);
   const [activeImage, setActiveImage] = useState(1);
   const [selectedSize, setSelectedSize] = useState(sizes[0]);
   const [quantity, setQuantity] = useState(1);
   const [isSubscribed, setIsSubscribed] = useState(true);
+  const [adding, setAdding] = useState(false);
   const sliderRef = useRef<any>(null);
+
+  const handleAddToCart = async () => {
+    if (!product) return;
+    setAdding(true);
+    const ok = await addItem(product.id, quantity);
+    setAdding(false);
+    if (!ok) router.push("/login");
+  };
+
+  useEffect(() => {
+    if (!productId) return;
+    fetch(`/api/products/${productId}`)
+      .then((r) => r.json())
+      .then((json) => setProduct(json?.product ?? null))
+      .catch(() => {});
+  }, [productId]);
+
+  // Real images from backend, falling back to placeholders for layout
+  const fallbackImages = [
+    "https://images.unsplash.com/photo-1583337130417-3346a1be7dee?w=800&q=80",
+    "https://images.unsplash.com/photo-1581888227599-779811939961?w=800&q=80",
+    "https://images.unsplash.com/photo-1576201836106-db1758fd1c97?w=800&q=80",
+    "https://images.unsplash.com/photo-1541781774459-bb2af2f05b55?w=800&q=80",
+    "https://images.unsplash.com/photo-1596492784531-6e6eb5ea9993?w=800&q=80",
+  ];
+  const productImages =
+    product && (product.galleryImages?.length || product.imageUrl)
+      ? (product.galleryImages?.length ? product.galleryImages : [product.imageUrl]).filter(Boolean)
+      : fallbackImages;
+  const productName = product?.name || "Care Leo Salmon Recipe Adult Dog Food";
   
   const handleQuantityChange = (delta: number) => {
     setQuantity(prev => Math.max(1, prev + delta));
@@ -74,8 +113,12 @@ export default function ProductPage() {
     sliderRef.current.swiper.slideNext();
   }, []);
 
-  const currentPrice = isSubscribed ? (Number(selectedSize.price) * 0.8).toFixed(2) : Number(selectedSize.price).toFixed(2);
-  const currentOldPrice = Number(selectedSize.oldPrice).toFixed(2);
+  const basePrice = product ? product.price : Number(selectedSize.price);
+  const baseOldPrice = product
+    ? (product.compareAtPrice ?? product.price)
+    : Number(selectedSize.oldPrice);
+  const currentPrice = isSubscribed ? (basePrice * 0.8).toFixed(2) : basePrice.toFixed(2);
+  const currentOldPrice = baseOldPrice.toFixed(2);
 
   return (
     <div className="min-h-screen bg-[var(--brand-surface)] dark:bg-gray-900 transition-colors duration-300">
@@ -93,7 +136,7 @@ export default function ProductPage() {
             <ChevronRight size={14} />
             <Link href="/shop" className="hover:text-[var(--brand-primary)] transition-colors">Dog Food</Link>
             <ChevronRight size={14} />
-            <span className="font-semibold text-gray-900 dark:text-gray-200">Care Leo Salmon Recipe Adult Dog Food - {selectedSize.id}</span>
+            <span className="font-semibold text-gray-900 dark:text-gray-200">{productName}</span>
           </nav>
 
           {/* Product Top Section */}
@@ -103,13 +146,7 @@ export default function ProductPage() {
             <div className="flex flex-col-reverse sm:flex-row gap-3 sm:gap-4 h-full">
               {/* Thumbnails */}
               <div className="flex sm:flex-col gap-2 sm:gap-3 overflow-x-auto sm:overflow-y-auto sm:w-20 lg:w-24 shrink-0 scrollbar-hide pb-1 sm:pb-0">
-                {[
-                  "https://images.unsplash.com/photo-1583337130417-3346a1be7dee?w=200&q=80",
-                  "https://images.unsplash.com/photo-1581888227599-779811939961?w=200&q=80",
-                  "https://images.unsplash.com/photo-1576201836106-db1758fd1c97?w=200&q=80",
-                  "https://images.unsplash.com/photo-1541781774459-bb2af2f05b55?w=200&q=80",
-                  "https://images.unsplash.com/photo-1596492784531-6e6eb5ea9993?w=200&q=80"
-                ].map((imgSrc, i) => (
+                {productImages.map((imgSrc, i) => (
                   <button 
                     key={i} 
                     onClick={() => setActiveImage(i + 1)}
@@ -124,14 +161,8 @@ export default function ProductPage() {
               <div className="flex-1 bg-[var(--brand-surface-soft)] dark:bg-gray-800 rounded-2xl sm:rounded-3xl p-0 flex items-center justify-center relative h-[360px] sm:h-[480px] lg:h-[540px] xl:h-[600px] transition-all overflow-hidden border border-[var(--brand-line)] dark:border-gray-700 group">
                 <div className="animate-fade-in relative w-full h-full" key={activeImage}>
                   <img 
-                    src={[
-                      "https://images.unsplash.com/photo-1583337130417-3346a1be7dee?w=800&q=80",
-                      "https://images.unsplash.com/photo-1581888227599-779811939961?w=800&q=80",
-                      "https://images.unsplash.com/photo-1576201836106-db1758fd1c97?w=800&q=80",
-                      "https://images.unsplash.com/photo-1541781774459-bb2af2f05b55?w=800&q=80",
-                      "https://images.unsplash.com/photo-1596492784531-6e6eb5ea9993?w=800&q=80"
-                    ][activeImage - 1]}
-                    alt={`Care Leo Dog Food Image ${activeImage}`} 
+                    src={productImages[activeImage - 1] || productImages[0]}
+                    alt={productName} 
                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                   />
                 </div>
@@ -149,7 +180,7 @@ export default function ProductPage() {
               </div>
               
               <h1 className="text-3xl sm:text-4xl lg:text-[42px] font-black text-gray-900 dark:text-white leading-[1.1] mb-4 sm:mb-5 tracking-tight">
-                Care Leo Salmon Recipe Adult Dog Food <span className="text-gray-400 dark:text-gray-500 font-medium text-2xl sm:text-3xl lg:text-[32px] ml-1">– {selectedSize.id}</span>
+                {productName}
               </h1>
               
               <div className="flex flex-wrap items-center gap-3 sm:gap-4 mb-6 sm:mb-8 pb-6 sm:pb-8 border-b border-[var(--brand-line)] dark:border-gray-800">
@@ -283,10 +314,10 @@ export default function ProductPage() {
                     <span className="text-xl sm:text-2xl font-medium">+</span>
                   </button>
                 </div>
-                <button className="w-full sm:flex-1 h-12 sm:h-14 bg-[var(--brand-primary)] hover:bg-orange-600 text-white rounded-full font-bold text-base sm:text-lg flex items-center justify-center gap-2 transition-all shadow-md hover:shadow-lg active:scale-95 px-4">
+                <button onClick={handleAddToCart} disabled={adding || !product} className="w-full sm:flex-1 h-12 sm:h-14 bg-[var(--brand-primary)] hover:bg-orange-600 text-white rounded-full font-bold text-base sm:text-lg flex items-center justify-center gap-2 transition-all shadow-md hover:shadow-lg active:scale-95 px-4 disabled:opacity-60">
                   <Package size={18} className="sm:hidden" />
                   <Package size={20} className="hidden sm:block" />
-                  <span className="truncate">Add to Cart - ${(parseFloat(currentPrice) * quantity).toFixed(2)}</span>
+                  <span className="truncate">{adding ? "Adding..." : `Add to Cart - $${(parseFloat(currentPrice) * quantity).toFixed(2)}`}</span>
                 </button>
               </div>
 

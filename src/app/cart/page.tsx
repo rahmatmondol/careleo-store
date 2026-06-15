@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import Link from "next/link";
@@ -14,42 +14,7 @@ import { Navigation, FreeMode } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/free-mode";
-
-const initialCartItems = [
-  {
-    id: 1,
-    name: "Care Leo Salmon Recipe Adult Dog Food – 2kg",
-    image: "Package",
-    badges: [{ text: "Care Leo+ Deal", type: "primary" }, { text: "Save 20% with Care Leo+", type: "text" }],
-    description: "For Adult Dogs • Rich in Omega-3",
-    price: 24.99,
-    originalPrice: 31.24,
-    discount: "20% OFF",
-    quantity: 1,
-  },
-  {
-    id: 2,
-    name: "Greenies Original Regular Dental Treats – 340g",
-    image: "Package",
-    badges: [{ text: "Care Leo+ Deal", type: "primary" }, { text: "Save 20% with Care Leo+", type: "text" }],
-    description: "Daily dental care • For All Dogs",
-    price: 16.99,
-    originalPrice: 21.24,
-    discount: "20% OFF",
-    quantity: 1,
-  },
-  {
-    id: 3,
-    name: "Care Leo Octopus Plush Toy for Dogs",
-    image: "Package",
-    badges: [{ text: "Best Toy", type: "warning" }, { text: "Soft & Squeaky", type: "text" }],
-    description: "Durable • Interactive Play",
-    price: 12.99,
-    originalPrice: 12.99,
-    discount: null,
-    quantity: 1,
-  }
-];
+import { useCart } from "@/lib/CartContext";
 
 const recommendations = [
   { id: 1, name: "Care Leo Multivitamin Soft Chews - 60 pcs", price: 19.99, old: 24.99, rating: 4.8 },
@@ -60,37 +25,36 @@ const recommendations = [
 ];
 
 export default function CartPage() {
-  const [cartItems, setCartItems] = useState(initialCartItems);
+  const router = useRouter();
+  const { items, subtotal, updateItem, removeItem } = useCart();
 
-  const updateQuantity = (id: number, delta: number) => {
-    setCartItems(items => 
-      items.map(item => {
-        if (item.id === id) {
-          const newQuantity = Math.max(1, item.quantity + delta);
-          return { ...item, quantity: newQuantity };
-        }
-        return item;
-      })
-    );
+  const cartItems = items.map((it) => ({
+    id: it.id,
+    name: it.product?.name ?? "Product",
+    description: it.product?.brand ?? "",
+    price: Number(it.product?.price ?? 0),
+    originalPrice: Number(it.product?.price ?? 0),
+    imageUrl: it.product?.imageUrl ?? null,
+    discount: null as string | null,
+    quantity: it.quantity,
+  }));
+
+  const updateQuantity = (id: string, delta: number) => {
+    const item = items.find((i) => i.id === id);
+    if (!item) return;
+    updateItem(id, Math.max(1, item.quantity + delta));
   };
 
-  const removeItem = (id: number) => {
-    setCartItems(items => items.filter(item => item.id !== id));
-  };
+  const handleRemove = (id: string) => removeItem(id);
 
-  const clearCart = () => {
-    setCartItems([]);
-  };
+  const goToCheckout = () => router.push("/checkout");
 
   // Calculations
-  const subtotal = cartItems.reduce((sum, item) => sum + (item.originalPrice * item.quantity), 0);
-  const careLeoPlusDiscount = cartItems.reduce((sum, item) => {
-    const itemDiscount = (item.originalPrice - item.price) * item.quantity;
-    return sum + itemDiscount;
-  }, 0);
+  const careLeoPlusDiscount = 0;
   const discountedSubtotal = subtotal - careLeoPlusDiscount;
-  const estimatedTax = discountedSubtotal * 0.08; // assuming 8% tax
+  const estimatedTax = discountedSubtotal * 0.08;
   const total = discountedSubtotal + estimatedTax;
+
 
   return (
     <div className="min-h-screen bg-[var(--brand-surface)] dark:bg-gray-900 transition-colors duration-300">
@@ -153,24 +117,18 @@ export default function CartPage() {
                         
                         {/* Product Info */}
                         <div className="col-span-1 md:col-span-6 flex gap-4">
-                          <div className="w-20 h-20 sm:w-24 sm:h-24 bg-[var(--brand-surface-soft)] dark:bg-gray-900 rounded-2xl flex items-center justify-center shrink-0 border border-gray-100 dark:border-gray-800">
-                            <Package size={32} className="text-gray-300 dark:text-gray-600" />
+                          <div className="w-20 h-20 sm:w-24 sm:h-24 bg-[var(--brand-surface-soft)] dark:bg-gray-900 rounded-2xl flex items-center justify-center shrink-0 border border-gray-100 dark:border-gray-800 overflow-hidden">
+                            {item.imageUrl ? (
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
+                            ) : (
+                              <Package size={32} className="text-gray-300 dark:text-gray-600" />
+                            )}
                           </div>
                           <div className="flex flex-col justify-center">
                             <h3 className="font-bold text-gray-900 dark:text-white text-sm sm:text-base leading-tight mb-2">
                               <Link href={`/product/${item.id}`} className="hover:text-[var(--brand-primary)] transition-colors">{item.name}</Link>
                             </h3>
-                            <div className="flex flex-wrap gap-2 mb-2">
-                              {item.badges.map((badge, idx) => (
-                                <span key={idx} className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                                  badge.type === 'primary' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' :
-                                  badge.type === 'warning' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400' :
-                                  'text-green-600 dark:text-green-400'
-                                }`}>
-                                  {badge.text}
-                                </span>
-                              ))}
-                            </div>
                             <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">{item.description}</p>
                           </div>
                         </div>
@@ -211,7 +169,7 @@ export default function CartPage() {
                             {item.originalPrice !== item.price && (
                               <span className="text-[10px] font-bold text-green-500 mt-1">You save ${((item.originalPrice - item.price) * item.quantity).toFixed(2)}</span>
                             )}
-                            <button onClick={() => removeItem(item.id)} className="md:absolute md:-right-12 mt-3 md:mt-0 text-gray-400 hover:text-red-500 transition-colors w-8 h-8 rounded-full hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center justify-center">
+                            <button onClick={() => handleRemove(item.id)} className="md:absolute md:-right-12 mt-3 md:mt-0 text-gray-400 hover:text-red-500 transition-colors w-8 h-8 rounded-full hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center justify-center">
                               <Trash2 size={16} />
                             </button>
                           </div>
@@ -228,9 +186,6 @@ export default function CartPage() {
                     <Link href="/shop" className="flex items-center gap-2 text-sm font-bold text-gray-600 dark:text-gray-400 hover:text-[var(--brand-primary)] dark:hover:text-[var(--brand-primary)] transition-colors">
                       <ArrowLeft size={16} /> Continue Shopping
                     </Link>
-                    <button onClick={clearCart} className="flex items-center gap-2 text-sm font-bold px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors dark:text-gray-300">
-                      <Trash2 size={14} /> Clear Cart
-                    </button>
                   </div>
                 )}
               </div>
@@ -283,7 +238,7 @@ export default function CartPage() {
                 )}
 
                 <div className="flex flex-col gap-3 mb-6">
-                  <button className="w-full h-14 bg-[var(--brand-primary)] hover:bg-orange-600 text-white rounded-full font-bold text-lg flex items-center justify-center gap-2 transition-all shadow-md hover:shadow-lg active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed" disabled={cartItems.length === 0}>
+                  <button onClick={goToCheckout} className="w-full h-14 bg-[var(--brand-primary)] hover:bg-orange-600 text-white rounded-full font-bold text-lg flex items-center justify-center gap-2 transition-all shadow-md hover:shadow-lg active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed" disabled={cartItems.length === 0}>
                     <Lock size={18} /> Proceed to Checkout
                   </button>
                   <button className="w-full h-14 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white rounded-full font-bold text-lg flex items-center justify-center gap-2 transition-all shadow-sm hover:bg-gray-50 dark:hover:bg-gray-800 hover:shadow-md active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed" disabled={cartItems.length === 0}>

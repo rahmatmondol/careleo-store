@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 
 type ProductCardProps = {
+  id?: string;
   name: string;
   price: string;
   old: string;
@@ -12,9 +13,11 @@ type ProductCardProps = {
   badgeColor: string;
   rating: number;
   imageUrl?: string;
+  onAddToCart?: () => void;
 };
 
 export default function ProductCard({
+  id,
   name,
   price,
   old,
@@ -22,9 +25,11 @@ export default function ProductCard({
   badgeColor,
   rating,
   imageUrl,
+  onAddToCart,
 }: ProductCardProps) {
   // Generate a pseudo-random hue based on product name for a unique gradient
   const hue = name.length * 15 % 360;
+  const href = id ? `/product/${id}` : `/product/${encodeURIComponent(name)}`;
   
   return (
       <div className="group flex flex-col rounded-[15px] sm:rounded-[15px] border border-[var(--brand-line)] bg-white p-2.5 sm:p-5 shadow-[0_4px_20px_rgba(90,49,213,0.03)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_40px_rgba(90,49,213,0.12)]">
@@ -82,7 +87,7 @@ export default function ProductCard({
         </span>
       </div>
 
-      <Link href={`/product/${name}`}>
+      <Link href={href}>
       <h3 className="mb-1.5 sm:mb-4 flex-1 line-clamp-2 text-xs sm:text-base font-bold leading-snug text-gray-900 group-hover:text-[var(--brand-primary)] transition-colors">
         {name}
       </h3>
@@ -104,7 +109,7 @@ export default function ProductCard({
       </div>
 
       <div className="mt-2 sm:mt-4 flex gap-1.5 sm:gap-2">
-        <button className="flex flex-1 items-center justify-center gap-1 sm:gap-2 rounded-full border border-[var(--brand-line)] bg-white py-2 sm:py-3 text-[11px] sm:text-sm font-bold text-gray-700 shadow-sm transition-all hover:border-[var(--brand-primary)] hover:bg-[var(--brand-primary)] hover:text-white hover:shadow-md active:scale-95">
+        <button onClick={onAddToCart} className="flex flex-1 items-center justify-center gap-1 sm:gap-2 rounded-full border border-[var(--brand-line)] bg-white py-2 sm:py-3 text-[11px] sm:text-sm font-bold text-gray-700 shadow-sm transition-all hover:border-[var(--brand-primary)] hover:bg-[var(--brand-primary)] hover:text-white hover:shadow-md active:scale-95">
           <ShoppingCart size={14} className="sm:hidden" />
           <ShoppingCart size={16} className="hidden sm:block" />
           Add to Cart

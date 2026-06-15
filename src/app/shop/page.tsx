@@ -14,6 +14,9 @@ import {
 import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
 import ProductCard from "../../components/ProductCard";
+import { useProducts, formatPrice } from "@/lib/useStore";
+import { useCart } from "@/lib/CartContext";
+import { useRouter } from "next/navigation";
 
 const categories = [
   { name: "All Products", icon: "🛍️" },
@@ -39,7 +42,7 @@ type Product = {
   category?: string;
 };
 
-const products: Product[] = [
+const _mockProducts: Product[] = [
   {
     name: "Care Leo Chicken Recipe Adult Dog Food - 2kg",
     price: "$24.99",
@@ -110,6 +113,17 @@ const products: Product[] = [
 
 export default function ShopPage() {
   const [filterOpen, setFilterOpen] = useState(false);
+  const { products, total, loading } = useProducts({ limit: 24 });
+  const { addItem } = useCart();
+  const router = useRouter();
+
+  const handleAddToCart = async (productId: string) => {
+    try {
+      await addItem(productId, 1);
+    } catch {
+      router.push("/login");
+    }
+  };
 
   return (
     <main className="min-h-screen bg-[var(--background)] text-[var(--foreground)]">
@@ -197,7 +211,7 @@ export default function ShopPage() {
         <div>
           <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
             <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
-              Showing 1–12 of 246 products
+              {loading ? "Loading products..." : `Showing ${products.length} of ${total} products`}
             </p>
 
             <div className="flex gap-2 sm:gap-3">
@@ -219,18 +233,30 @@ export default function ShopPage() {
           </div>
 
           <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3 lg:gap-6">
-            {products.map((product) => (
-              <ProductCard
-                key={product.name}
-                name={product.name}
-                price={product.price}
-                old={product.old}
-                badge={product.badge}
-                badgeColor={product.badgeColor}
-                rating={product.rating}
-                imageUrl={product.imageUrl}
-              />
-            ))}
+            {loading ? (
+              Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="h-80 animate-pulse rounded-[15px] bg-[var(--brand-surface-soft)] dark:bg-gray-800" />
+              ))
+            ) : products.length === 0 ? (
+              <p className="col-span-full py-12 text-center text-gray-500 dark:text-gray-400">
+                No products found.
+              </p>
+            ) : (
+              products.map((product) => (
+                <ProductCard
+                  key={product.id}
+                  id={product.id}
+                  name={product.name}
+                  price={formatPrice(product.price)}
+                  old={product.compareAtPrice ? formatPrice(product.compareAtPrice) : ""}
+                  badge={product.brand || "Care Leo"}
+                  badgeColor="bg-orange-500"
+                  rating={product.rating}
+                  imageUrl={product.imageUrl || undefined}
+                  onAddToCart={() => handleAddToCart(product.id)}
+                />
+              ))
+            )}
           </div>
 
           <div className="mt-10 flex justify-center gap-2 sm:gap-3">

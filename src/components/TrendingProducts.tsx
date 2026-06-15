@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import ProductCard from "./ProductCard";
+import { useProducts, formatPrice } from "@/lib/useStore";
 
 type Tab = "best-sellers" | "new-arrivals" | "subscription-deals";
 
@@ -130,8 +131,21 @@ const productsByTab: Record<Tab, {
 
 export default function TrendingProducts() {
   const [activeTab, setActiveTab] = useState<Tab>("best-sellers");
+  const { products } = useProducts({ limit: 4 });
 
-  const currentProducts = productsByTab[activeTab];
+  // Use real products when available; fall back to curated mock content otherwise.
+  const currentProducts = products.length > 0
+    ? products.map((p) => ({
+        id: p.id,
+        name: p.name,
+        price: formatPrice(p.price),
+        old: p.compareAtPrice ? formatPrice(p.compareAtPrice) : "",
+        badge: p.brand || "Care Leo",
+        badgeColor: "bg-[var(--brand-primary)]",
+        rating: p.rating,
+        imageUrl: p.imageUrl || undefined,
+      }))
+    : productsByTab[activeTab].map((p) => ({ ...p, id: undefined as string | undefined }));
 
   return (
     <section className="mx-auto max-w-[var(--container-width)] px-6 py-12 md:py-16">
@@ -160,7 +174,8 @@ export default function TrendingProducts() {
       <div className="grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-4">
         {currentProducts.map((product) => (
           <ProductCard
-            key={product.name}
+            key={product.id || product.name}
+            id={product.id}
             name={product.name}
             price={product.price}
             old={product.old}

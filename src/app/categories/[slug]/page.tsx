@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ProductCard from "@/components/ProductCard";
@@ -9,66 +9,42 @@ import {
   ChevronRight, Filter, ChevronDown, SlidersHorizontal, 
   X, Check, Star, Search
 } from "lucide-react";
-import { useParams } from "next/navigation";
-
-// Mock data generator for category products
-const generateProducts = (categoryName: string, count: number) => {
-  return Array.from({ length: count }).map((_, i) => {
-    const isNew = i % 5 === 0;
-    const isBestseller = i % 7 === 0;
-    const isSale = i % 4 === 0;
-    
-    let badge = "";
-    let badgeColor = "";
-    
-    if (isNew) {
-      badge = "New Arrival";
-      badgeColor = "bg-[var(--brand-secondary)]";
-    } else if (isBestseller) {
-      badge = "Bestseller";
-      badgeColor = "bg-[var(--brand-primary)]";
-    } else if (isSale) {
-      badge = "Save 15%";
-      badgeColor = "bg-rose-500";
-    } else {
-      badge = "Care Leo+";
-      badgeColor = "bg-[var(--brand-accent)]";
-    }
-
-    const basePrice = 10 + Math.floor(Math.random() * 80);
-    
-    return {
-      id: `prod-${i}`,
-      name: `Premium ${categoryName} Product ${i + 1} - High Quality Care`,
-      price: `$${basePrice}.99`,
-      old: isSale ? `$${basePrice + 15}.99` : `$${basePrice + 5}.99`,
-      badge,
-      badgeColor,
-      rating: 4 + Math.random(),
-      brand: ["Purina", "Royal Canin", "Blue Buffalo", "Hill's", "Pedigree"][i % 5],
-      imageUrl: [
-        "https://images.unsplash.com/photo-1583337130417-3346a1be7dee?w=500&q=80",
-        "https://images.unsplash.com/photo-1581888227599-779811939961?w=500&q=80",
-        "https://images.unsplash.com/photo-1576201836106-db1758fd1c97?w=500&q=80",
-        "https://images.unsplash.com/photo-1541781774459-bb2af2f05b55?w=500&q=80"
-      ][i % 4],
-    };
-  });
-};
+import { useParams, useRouter } from "next/navigation";
+import { useProducts, useCategories, formatPrice } from "@/lib/useStore";
+import { useCart } from "@/lib/CartContext";
 
 export default function CategoryArchivePage() {
   const params = useParams();
+  const router = useRouter();
   const rawSlug = params.slug as string;
-  
-  // Format slug to readable name (e.g., "dog-food" -> "Dog Food")
-  const categoryName = rawSlug 
-    ? rawSlug.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')
-    : "Category";
 
-  const [products] = useState(() => generateProducts(categoryName, 24));
+  const { categories } = useCategories();
+  const matchedCategory = useMemo(
+    () => categories.find((c) => c.slug === rawSlug),
+    [categories, rawSlug],
+  );
+
+  // Format slug to readable name (e.g., "dog-food" -> "Dog Food")
+  const categoryName = matchedCategory?.name
+    ?? (rawSlug
+      ? rawSlug.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')
+      : "Category");
+
+  const { products, loading } = useProducts(
+    matchedCategory ? { categoryId: matchedCategory.id, limit: 24 } : { limit: 24 },
+  );
+  const { addItem } = useCart();
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [sortBy, setSortBy] = useState("Recommended");
   const [isSortOpen, setIsSortOpen] = useState(false);
+
+  const handleAddToCart = async (productId: string) => {
+    try {
+      await addItem(productId, 1);
+    } catch {
+      router.push("/login");
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[var(--background)]">
@@ -300,18 +276,28 @@ export default function CategoryArchivePage() {
 
               {/* Product Grid */}
               <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3 lg:gap-6">
-                {products.map((product) => (
-                  <ProductCard
-                    key={product.id}
-                    name={product.name}
-                    price={product.price}
-                    old={product.old}
-                    badge={product.badge}
-                    badgeColor={product.badgeColor}
-                    rating={product.rating}
-                    imageUrl={product.imageUrl}
-                  />
-                ))}
+                {loading ? (
+                  Array.from({ length: 6 }).map((_, i) => (
+                    <div key={i} className="h-80 animate-pulse rounded-[15px] bg-[var(--brand-surface-soft)]" />
+                  ))
+                ) : products.length === 0 ? (
+                  <p className="col-span-full py-12 text-center text-gray-500">No products found in this category.</p>
+                ) : (
+                  products.map((product) => (
+                    <ProductCard
+                      key={product.id}
+                      id={product.id}
+                      name={product.name}
+                      price={formatPrice(product.price)}
+                      old={product.compareAtPrice ? formatPrice(product.compareAtPrice) : ""}
+                      badge={product.brand || "Care Leo"}
+                      badgeColor="bg-[var(--brand-primary)]"
+                      rating={product.rating}
+                      imageUrl={product.imageUrl || undefined}
+                      onAddToCart={() => handleAddToCart(product.id)}
+                    />
+                  ))
+                )}
               </div>
 
               {/* Pagination */}
