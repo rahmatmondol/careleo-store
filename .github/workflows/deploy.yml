@@ -1,0 +1,34 @@
+name: Deploy Careleo Store
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy to VPS
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: 76.13.30.119
+          username: ubuntu
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          script: |
+            set -e
+            cd ~/careleo-deploy/careleo-store
+
+            echo "📦 Pulling latest code..."
+            git pull origin main
+
+            echo "🔨 Building Docker image..."
+            docker compose -f ~/careleo-deploy/docker-compose.prod.yml build store
+
+            echo "🚀 Restarting store container..."
+            docker compose -f ~/careleo-deploy/docker-compose.prod.yml up -d store
+
+            echo "✅ Deployment complete!"
