@@ -5,9 +5,9 @@ import { Activity, Package, Heart, Bot, ArrowRight, Smile, Calendar } from "luci
 
 export default function AICareSection() {
   return (
-    <section className="mx-auto max-w-[var(--container-width)] px-6 py-12 md:py-16">
-      <div className="relative grid items-center gap-12 overflow-hidden rounded-[40px] bg-[linear-gradient(135deg,#f5efff_0%,#fff7fc_100%)] p-8 md:p-16 lg:grid-cols-2">
-        <div className="absolute right-0 top-0 h-96 w-96 -translate-y-1/2 translate-x-1/4 rounded-full bg-[rgba(143,92,255,0.16)] blur-3xl"></div>
+    <section className="mx-auto max-w-[var(--container-width)] px-4 sm:px-6 py-10 md:py-16">
+      <div className="relative grid items-center gap-12 overflow-hidden rounded-3xl sm:rounded-[40px] bg-[linear-gradient(135deg,#f5efff_0%,#fff7fc_100%)] p-6 sm:p-8 md:p-16 lg:grid-cols-2">
+        <div className="pointer-events-none absolute right-0 top-0 h-64 w-64 -translate-y-1/2 translate-x-1/4 rounded-full bg-[rgba(143,92,255,0.16)] blur-3xl sm:h-96 sm:w-96"></div>
 
         <div className="relative z-10 hidden lg:block">
           <div className="relative mx-auto w-[320px] rounded-[40px] border-[8px] border-white bg-white shadow-[0_20px_60px_rgba(90,49,213,0.12)] overflow-hidden transition-transform duration-500 hover:scale-[1.02]">
@@ -68,22 +68,22 @@ export default function AICareSection() {
           <div className="brand-chip mb-6 inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-bold">
             <Bot size={16} /> AI-Powered Care
           </div>
-          <h2 className="text-4xl font-black text-gray-900 md:text-5xl leading-tight">
+          <h2 className="text-[28px] sm:text-4xl md:text-5xl font-black text-gray-900 leading-[1.18] pb-1">
             AI That Understands <br/> Your Pet
           </h2>
-          <p className="mt-6 max-w-lg text-lg text-gray-600 font-medium leading-relaxed">
+          <p className="mt-4 sm:mt-6 max-w-lg text-base sm:text-lg text-gray-600 font-medium leading-relaxed">
             Advanced AI tools to keep your pet healthy, happy, and thriving every day.
           </p>
 
-          <div className="mt-8 grid gap-6 sm:grid-cols-2">
+          <div className="mt-6 sm:mt-8 grid gap-5 sm:gap-6 sm:grid-cols-2">
             <AIFeature icon={<Activity />} title="AI Disease Detection" desc="Detect issues early" color="text-[var(--brand-accent)]" bg="bg-[var(--brand-accent-soft)]" />
             <AIFeature icon={<Bot />} title="AI Nutrition Engine" desc="Personalized diet plans" color="text-[var(--brand-primary)]" bg="bg-[var(--brand-surface-soft)]" />
             <AIFeature icon={<Smile />} title="Behavior Analysis" desc="Understand mood & stress" color="text-[var(--brand-secondary)]" bg="bg-[rgba(143,92,255,0.12)]" />
             <AIFeature icon={<Calendar />} title="Smart Reminders" desc="Never miss important care" color="text-[#53358d]" bg="bg-[var(--brand-warm-soft)]" />
           </div>
 
-          <div className="mt-10">
-            <Link href="/ai-care" className="brand-primary-button inline-flex items-center gap-2 rounded-full px-8 py-4 text-base font-bold">
+          <div className="mt-8 sm:mt-10">
+            <Link href="/ai-care" className="brand-primary-button flex w-full items-center justify-center gap-2 rounded-full px-8 py-4 text-base font-bold sm:inline-flex sm:w-auto">
               Try Care Leo AI <ArrowRight size={18} />
             </Link>
           </div>

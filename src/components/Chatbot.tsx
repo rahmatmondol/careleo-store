@@ -71,15 +71,17 @@ export default function Chatbot() {
       {/* Floating Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className={`fixed bottom-6 right-6 p-4 rounded-full shadow-2xl transition-all duration-300 z-50 flex items-center justify-center
+        aria-label={isOpen ? "Close Leo assistant" : "Open Leo assistant"}
+        className={`fixed bottom-5 right-5 sm:bottom-6 sm:right-6 p-4 rounded-full shadow-2xl transition-all duration-300 z-50 flex items-center justify-center
           ${isOpen ? 'bg-[var(--brand-surface)] text-[var(--foreground)] border border-[var(--brand-line)] hover:bg-[var(--brand-surface-soft)]' : 'brand-primary-button hover:scale-105'}`}
       >
         {isOpen ? <X size={24} /> : <MessageCircle size={24} />}
       </button>
 
-      {/* Chat Window */}
+      {/* Chat Window — a fixed 350px panel plus a 24px offset overflowed any
+          phone narrower than ~374px, so it spans the viewport gutters instead. */}
       {isOpen && (
-        <div className="fixed bottom-24 right-6 w-[350px] h-[500px] bg-[var(--brand-surface)] rounded-2xl shadow-2xl flex flex-col z-50 overflow-hidden border border-[var(--brand-line)] animate-in slide-in-from-bottom-5 fade-in duration-300">
+        <div className="fixed bottom-24 left-4 right-4 h-[min(500px,70vh)] sm:left-auto sm:right-6 sm:w-[350px] sm:h-[500px] bg-[var(--brand-surface)] rounded-2xl shadow-2xl flex flex-col z-50 overflow-hidden border border-[var(--brand-line)] animate-in slide-in-from-bottom-5 fade-in duration-300">
           {/* Header */}
           <div className="bg-[var(--brand-primary)] p-4 flex items-center gap-3 text-white relative overflow-hidden">
             <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -mr-10 -mt-10"></div>

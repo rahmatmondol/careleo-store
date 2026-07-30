@@ -1,17 +1,17 @@
 import React from "react";
 import Link from "next/link";
-import { CheckCircle2, ChevronRight, Check, Star, User } from "lucide-react";
+import { CheckCircle2, ChevronRight, Check, User } from "lucide-react";
 
 export default function SubscriptionPlans() {
   return (
-    <div className="flex flex-col xl:flex-row gap-8 xl:gap-12 items-center xl:items-stretch">
+    <div className="flex flex-col xl:flex-row gap-10 xl:gap-12 items-center xl:items-stretch">
       {/* Left Content */}
-      <div className="w-full xl:w-[35%] flex flex-col justify-center text-left">
-        <h2 className="text-4xl md:text-5xl font-black text-[var(--foreground)] mb-4 leading-tight">
+      <div className="w-full min-w-0 xl:w-[35%] flex flex-col justify-center text-left">
+        <h2 className="text-[28px] sm:text-4xl md:text-5xl font-black text-[var(--foreground)] mb-4 leading-[1.18] pb-1">
           Save More. Care Better.<br />
           Join <span className="text-orange-500">Care Leo+</span> Subscription
         </h2>
-        <p className="text-[var(--brand-ink-soft)] text-lg mb-8 max-w-lg font-medium">
+        <p className="text-[var(--brand-ink-soft)] text-base sm:text-lg mb-8 max-w-lg font-medium">
           Unlock exclusive discounts, AI-powered pet care tools, and premium services. Cancel anytime.
         </p>
         
@@ -34,8 +34,8 @@ export default function SubscriptionPlans() {
           </li>
         </ul>
         
-        <div className="inline-flex items-center bg-orange-50 border border-orange-100 rounded-xl px-6 py-4 w-max">
-          <div className="bg-white rounded-full p-2 shadow-sm mr-4 text-orange-500">
+        <div className="flex items-center bg-orange-50 border border-orange-100 rounded-xl px-4 sm:px-6 py-4 w-full sm:w-max">
+          <div className="bg-white rounded-full p-2 shadow-sm mr-4 shrink-0 text-orange-500">
             <User className="w-5 h-5" />
           </div>
           <div>
@@ -48,9 +48,9 @@ export default function SubscriptionPlans() {
       </div>
 
       {/* Right Content - Pricing Cards */}
-      <div className="w-full xl:w-[65%] grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
+      <div className="w-full min-w-0 xl:w-[65%] grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 md:items-end pt-4 md:pt-0">
         {/* Basic Plan */}
-        <div className="bg-white rounded-[15px] p-6 border border-gray-200 shadow-sm flex flex-col hover:border-emerald-200 hover:shadow-md transition-all h-full">
+        <div className="bg-white rounded-[15px] p-5 sm:p-6 border border-gray-200 shadow-sm flex flex-col hover:border-emerald-200 hover:shadow-md transition-all h-full">
           <div className="flex items-center mb-5">
             <div className="bg-emerald-50 p-3 rounded-full mr-4 text-emerald-500">
               <CheckCircle2 className="w-6 h-6" />
@@ -98,7 +98,7 @@ export default function SubscriptionPlans() {
         </div>
 
         {/* Premium Plan */}
-        <div className="bg-white rounded-[15px] p-6 border-2 border-orange-500 shadow-xl relative flex flex-col transform md:-translate-y-4 h-[calc(100%+1rem)] z-10">
+        <div className="bg-white rounded-[15px] p-5 sm:p-6 border-2 border-orange-500 shadow-xl relative flex flex-col h-full md:transform md:-translate-y-4 md:h-[calc(100%+1rem)] z-10">
           <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2">
             <span className="bg-orange-500 text-white px-4 py-1 rounded-full text-xs font-bold whitespace-nowrap shadow-md">
               Most Popular
@@ -159,7 +159,7 @@ export default function SubscriptionPlans() {
         </div>
 
         {/* Ultimate Plan */}
-        <div className="bg-white rounded-[15px] p-6 border border-gray-200 shadow-sm flex flex-col hover:border-violet-200 hover:shadow-md transition-all h-full">
+        <div className="bg-white rounded-[15px] p-5 sm:p-6 border border-gray-200 shadow-sm flex flex-col hover:border-violet-200 hover:shadow-md transition-all h-full">
           <div className="flex items-center mb-5">
             <div className="bg-violet-50 p-3 rounded-full mr-4 text-violet-500">
               <div className="w-6 h-6 flex items-center justify-center text-xl">👥</div>

@@ -40,7 +40,7 @@ export default function ProductCard({
   const href = key ? `/product/${encodeURIComponent(key)}` : null;
 
   return (
-      <div className="group flex flex-col rounded-[15px] sm:rounded-[15px] border border-[var(--brand-line)] bg-white p-2.5 sm:p-5 shadow-[0_4px_20px_rgba(90,49,213,0.03)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_40px_rgba(90,49,213,0.12)]">
+      <div className="group flex min-w-0 flex-col rounded-[15px] sm:rounded-[15px] border border-[var(--brand-line)] bg-white p-2.5 sm:p-5 shadow-[0_4px_20px_rgba(90,49,213,0.03)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_40px_rgba(90,49,213,0.12)]">
         <div className="relative mb-2 sm:mb-4 flex h-36 sm:h-64 items-center justify-center rounded-[15px] sm:rounded-[15px] overflow-hidden bg-[var(--brand-surface-soft)]">
           
           <div 
@@ -88,12 +88,12 @@ export default function ProductCard({
 
       {href ? (
         <Link href={href}>
-          <h3 className="mb-1.5 sm:mb-4 flex-1 line-clamp-2 text-xs sm:text-base font-bold leading-snug text-gray-900 group-hover:text-[var(--brand-primary)] transition-colors">
+          <h3 className="mb-1.5 sm:mb-4 flex-1 line-clamp-2 break-words text-xs sm:text-base font-bold leading-snug text-gray-900 group-hover:text-[var(--brand-primary)] transition-colors">
             {name}
           </h3>
         </Link>
       ) : (
-        <h3 className="mb-1.5 sm:mb-4 flex-1 line-clamp-2 text-xs sm:text-base font-bold leading-snug text-gray-900">
+        <h3 className="mb-1.5 sm:mb-4 flex-1 line-clamp-2 break-words text-xs sm:text-base font-bold leading-snug text-gray-900">
           {name}
         </h3>
       )}

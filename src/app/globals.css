@@ -63,6 +63,13 @@
   100% { transform: translateX(-50%); }
 }
 
+/* Safety net for sideways scroll. `clip` rather than `hidden` on purpose:
+   `overflow-x: hidden` turns the body into a scroll container, which silently
+   breaks `position: sticky` (the navbar). `clip` doesn't. */
+body {
+  overflow-x: clip;
+}
+
 body {
   background:
     radial-gradient(circle at top left, rgba(143, 92, 255, 0.12), transparent 28%),
@@ -136,6 +143,41 @@ select {
   border: 1px solid var(--brand-line);
   background: rgba(255, 255, 255, 0.95);
   box-shadow: 0 10px 26px rgba(67, 33, 175, 0.06);
+}
+
+/* Horizontal scroll strips (filter pills, thumbnail rails) without a visible
+   scrollbar. `scrollbar-hide` is referenced in a few places but was never
+   defined — this is the real utility. */
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Full-bleed horizontal strip inside a padded section: lets the row scroll edge
+   to edge on small screens while keeping the first item aligned to the text. */
+.edge-strip {
+  margin-inline: calc(var(--edge-strip-gutter, 1rem) * -1);
+  padding-inline: var(--edge-strip-gutter, 1rem);
+}
+
+@media (min-width: 640px) {
+  .edge-strip {
+    margin-inline: 0;
+    padding-inline: 0;
+  }
 }
 
 .brand-input-shell:focus-within {

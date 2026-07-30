@@ -44,21 +44,23 @@ const columns: { heading: string; links: { label: string; href: string }[] }[] =
 
 export default function Footer() {
   return (
-    <footer className="border-t border-[var(--brand-line)] bg-white/80 px-6 py-16 backdrop-blur-sm">
-      <div className="mx-auto grid max-w-[var(--container-width)] gap-12 lg:grid-cols-7">
-        <div className="lg:col-span-2">
-          <div className="mb-6 flex items-center gap-4">
-            <BrandLogo variant="full" className="h-24 w-24" />
+    <footer className="border-t border-[var(--brand-line)] bg-white/80 px-4 py-12 backdrop-blur-sm sm:px-6 sm:py-16">
+      {/* Two link columns side by side on phones — six stacked blocks made the
+          footer taller than the page above it. */}
+      <div className="mx-auto grid max-w-[var(--container-width)] grid-cols-2 gap-x-6 gap-y-10 sm:gap-x-8 lg:grid-cols-7 lg:gap-12">
+        <div className="col-span-2 lg:col-span-2">
+          <div className="mb-4 flex items-center gap-4 sm:mb-6">
+            <BrandLogo variant="full" className="h-20 w-20 sm:h-24 sm:w-24" />
           </div>
-          <p className="max-w-xs text-base font-medium text-gray-500">
+          <p className="max-w-xs text-sm font-medium text-gray-500 sm:text-base">
             Everything your pet needs, delivered with love.
           </p>
         </div>
 
         {columns.map(({ heading, links }) => (
           <div key={heading}>
-            <h4 className="mb-6 font-black text-gray-900">{heading}</h4>
-            <ul className="space-y-4 text-sm font-bold text-gray-500">
+            <h4 className="mb-4 font-black text-gray-900 sm:mb-6">{heading}</h4>
+            <ul className="space-y-3.5 text-sm font-bold text-gray-500 sm:space-y-4">
               {links.map(({ label, href }) => (
                 <li key={label}>
                   <Link href={href} className="hover:text-[var(--brand-primary)]">
@@ -70,8 +72,8 @@ export default function Footer() {
           </div>
         ))}
 
-        <div className="lg:col-span-1">
-          <h4 className="mb-6 font-black text-gray-900">Stay in the loop</h4>
+        <div className="col-span-2 lg:col-span-1">
+          <h4 className="mb-4 font-black text-gray-900 sm:mb-6">Stay in the loop</h4>
           <p className="mb-4 text-sm font-medium text-gray-500">
             Get exclusive offers, pet tips and Care Leo updates.
           </p>

@@ -24,37 +24,43 @@ export default function TrendingProducts() {
   const { addItem } = useCart();
 
   return (
-    <section className="mx-auto max-w-[var(--container-width)] px-6 py-12 md:py-16">
-      <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4">
+    <section className="mx-auto max-w-[var(--container-width)] px-4 sm:px-6 py-10 md:py-16">
+      <div className="flex flex-col md:flex-row md:items-end justify-between mb-6 md:mb-10 gap-4">
         <div>
-          <h2 className="text-3xl font-black text-gray-900 mb-2">Trending Products</h2>
+          <h2 className="text-2xl sm:text-3xl font-black text-gray-900 mb-1.5 sm:mb-2">
+            Trending Products
+          </h2>
           <p className="text-gray-500 font-medium text-sm md:text-base">
             Top picks loved by pets and parents.
           </p>
         </div>
-        <div className="self-start rounded-full bg-[var(--brand-surface-soft)] p-1.5 flex gap-1 shadow-inner border border-white/50">
-          {tabs.map((tab) => (
-            <button
-              key={tab.key}
-              onClick={() => setActiveTab(tab.key)}
-              className={`rounded-full px-6 py-2.5 text-sm font-bold transition-all duration-300 ${
-                activeTab === tab.key
-                  ? "bg-white text-[var(--brand-primary)] shadow-[0_4px_12px_rgba(90,49,213,0.12)] scale-105"
-                  : "text-gray-500 hover:text-[var(--brand-primary)] hover:bg-white/50"
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
+        {/* Three full-width pills overflow a 375px viewport, so the strip scrolls
+            horizontally on phones and only becomes a fixed row from sm up. */}
+        <div className="no-scrollbar edge-strip -mb-1 overflow-x-auto pb-1 md:overflow-visible">
+          <div className="inline-flex w-max gap-1 rounded-full border border-white/50 bg-[var(--brand-surface-soft)] p-1.5 shadow-inner">
+            {tabs.map((tab) => (
+              <button
+                key={tab.key}
+                onClick={() => setActiveTab(tab.key)}
+                className={`shrink-0 whitespace-nowrap rounded-full px-4 sm:px-6 py-2.5 text-[13px] sm:text-sm font-bold transition-all duration-300 ${
+                  activeTab === tab.key
+                    ? "bg-white text-[var(--brand-primary)] shadow-[0_4px_12px_rgba(90,49,213,0.12)]"
+                    : "text-gray-500 hover:text-[var(--brand-primary)] hover:bg-white/50"
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
       {loading ? (
-        <div className="grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3 sm:gap-6 lg:grid-cols-4">
           {Array.from({ length: 4 }).map((_, i) => (
             <div
               key={i}
-              className="h-80 animate-pulse rounded-[15px] bg-[var(--brand-surface-soft)]"
+              className="h-64 sm:h-80 animate-pulse rounded-[15px] bg-[var(--brand-surface-soft)]"
             />
           ))}
         </div>
@@ -64,7 +70,7 @@ export default function TrendingProducts() {
           meantime.
         </p>
       ) : (
-        <div className="grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3 sm:gap-6 lg:grid-cols-4">
           {products.map((product) => (
             <ProductCard
               key={product.id}
@@ -85,10 +91,10 @@ export default function TrendingProducts() {
         </div>
       )}
 
-      <div className="mt-10 flex justify-center">
+      <div className="mt-8 sm:mt-10 flex justify-center">
         <Link
           href="/shop"
-          className="brand-secondary-button rounded-full px-8 py-3.5 text-sm font-bold flex items-center gap-2 group"
+          className="brand-secondary-button w-full sm:w-auto justify-center rounded-full px-8 py-3.5 text-sm font-bold flex items-center gap-2 group"
         >
           View All Trending{" "}
           <span className="transition-transform group-hover:translate-x-1">→</span>

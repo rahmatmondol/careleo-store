@@ -17,7 +17,7 @@ export default function HomePage() {
       <Navbar />
       <HeroSection />
       
-      <section className="mx-auto max-w-[var(--container-width)] px-6 py-12 md:py-20">
+      <section className="mx-auto max-w-[var(--container-width)] px-4 py-10 sm:px-6 md:py-20">
         <SubscriptionPlans />
       </section>
 
