@@ -2,7 +2,7 @@
 
 import NextLink from "next/link";
 import React, { useEffect } from "react";
-import { X, Search } from "lucide-react";
+import { X } from "lucide-react";
 import BrandLogo from "./BrandLogo";
 
 type MobileMenuProps = {
@@ -12,7 +12,7 @@ type MobileMenuProps = {
 
 
 const navItems = [
-  { label: "Shop", href: "/" },
+  { label: "Shop", href: "/shop" },
   { label: "Subscription", href: "/subscription", badge: "Save More" },
   { label: "AI Care", href: "/ai-care" },
   { label: "Services", href: "/services" },
@@ -60,7 +60,7 @@ export default function MobileMenu({ open, onClose }: MobileMenuProps) {
 
           <div className="space-y-1">
             {navItems.map((item) => (
-              <a
+              <NextLink
                 key={item.label}
                 href={item.href}
                 onClick={onClose}
@@ -72,7 +72,7 @@ export default function MobileMenu({ open, onClose }: MobileMenuProps) {
                     {item.badge}
                   </span>
                 )}
-              </a>
+              </NextLink>
             ))}
           </div>
         </div>

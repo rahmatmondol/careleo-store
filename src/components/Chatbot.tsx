@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { MessageCircle, X, Send, Bot, User } from "lucide-react";
+import { MessageCircle, X, Send, User } from "lucide-react";
 import Image from "next/image";
 
 type Message = {
@@ -13,6 +13,8 @@ type Message = {
 export default function Chatbot() {
   const [isOpen, setIsOpen] = useState(false);
   const [inputValue, setInputValue] = useState("");
+  const [isSending, setIsSending] = useState(false);
+  const sessionIdRef = useRef<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([
     { id: "1", text: "Hi there! 👋 I'm Leo, your AI pet care assistant. How can I help you today?", isBot: true }
   ]);
@@ -24,28 +26,44 @@ export default function Chatbot() {
     }
   }, [messages, isOpen]);
 
-  const handleSendMessage = (e: React.FormEvent) => {
+  const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!inputValue.trim()) return;
+    const text = inputValue.trim();
+    if (!text || isSending) return;
 
     const newUserMessage: Message = {
       id: Date.now().toString(),
-      text: inputValue,
+      text,
       isBot: false,
     };
 
     setMessages((prev) => [...prev, newUserMessage]);
     setInputValue("");
+    setIsSending(true);
 
-    // Simulate bot response
-    setTimeout(() => {
+    try {
+      const res = await fetch("/api/ai/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: text, sessionId: sessionIdRef.current }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (data?.sessionId) sessionIdRef.current = data.sessionId;
+
       const botResponse: Message = {
         id: (Date.now() + 1).toString(),
-        text: "Thanks for reaching out! I'm a demo assistant right now, but I'll be able to help with your pet care needs soon.",
+        text: data?.reply || "Leo couldn't respond right now. Please try again.",
         isBot: true,
       };
       setMessages((prev) => [...prev, botResponse]);
-    }, 1000);
+    } catch {
+      setMessages((prev) => [
+        ...prev,
+        { id: (Date.now() + 1).toString(), text: "Leo is unreachable right now. Please try again in a moment.", isBot: true },
+      ]);
+    } finally {
+      setIsSending(false);
+    }
   };
 
   return (
@@ -98,12 +116,13 @@ export default function Chatbot() {
                 type="text"
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
-                placeholder="Ask about pet care..."
-                className="flex-1 px-4 py-2.5 bg-[var(--background)] border border-[var(--brand-line)] rounded-xl text-sm outline-none focus:border-[var(--brand-primary)] focus:ring-2 focus:ring-[var(--brand-primary)]/20 transition-all text-[var(--foreground)] placeholder:text-[var(--brand-ink-soft)] font-medium"
+                disabled={isSending}
+                placeholder={isSending ? "Leo is typing..." : "Ask about pet care..."}
+                className="flex-1 px-4 py-2.5 bg-[var(--background)] border border-[var(--brand-line)] rounded-xl text-sm outline-none focus:border-[var(--brand-primary)] focus:ring-2 focus:ring-[var(--brand-primary)]/20 transition-all text-[var(--foreground)] placeholder:text-[var(--brand-ink-soft)] font-medium disabled:opacity-60"
               />
               <button
                 type="submit"
-                disabled={!inputValue.trim()}
+                disabled={!inputValue.trim() || isSending}
                 className="p-2.5 brand-primary-button rounded-xl disabled:opacity-50 disabled:cursor-not-allowed transition-all shrink-0"
               >
                 <Send size={18} />

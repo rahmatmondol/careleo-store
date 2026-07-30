@@ -30,13 +30,17 @@ export default function CategoryArchivePage() {
       ? rawSlug.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')
       : "Category");
 
-  const { products, loading } = useProducts(
-    matchedCategory ? { categoryId: matchedCategory.id, limit: 24 } : { limit: 24 },
+  const [page, setPage] = useState(1);
+  const limit = 12;
+  const { products, total, loading } = useProducts(
+    matchedCategory ? { categoryId: matchedCategory.id, page, limit } : { page, limit },
   );
   const { addItem } = useCart();
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [sortBy, setSortBy] = useState("Recommended");
   const [isSortOpen, setIsSortOpen] = useState(false);
+
+  const totalPages = Math.max(1, Math.ceil(total / limit));
 
   const handleAddToCart = async (productId: string) => {
     try {
@@ -158,7 +162,12 @@ export default function CategoryArchivePage() {
                     <ul className="space-y-3">
                       {['Dry Food', 'Wet Food', 'Veterinary Diets', 'Human-Grade', 'Toppers'].map(item => (
                         <li key={item}>
-                          <a href="#" className="text-sm font-medium text-gray-600 hover:text-[var(--brand-primary)] transition-colors">{item}</a>
+                          <Link
+                            href={`/shop?search=${encodeURIComponent(item)}`}
+                            className="text-sm font-medium text-gray-600 hover:text-[var(--brand-primary)] transition-colors"
+                          >
+                            {item}
+                          </Link>
                         </li>
                       ))}
                     </ul>
@@ -287,6 +296,7 @@ export default function CategoryArchivePage() {
                     <ProductCard
                       key={product.id}
                       id={product.id}
+                      slug={product.slug}
                       name={product.name}
                       price={formatPrice(product.price)}
                       old={product.compareAtPrice ? formatPrice(product.compareAtPrice) : ""}
@@ -301,29 +311,43 @@ export default function CategoryArchivePage() {
               </div>
 
               {/* Pagination */}
+              {totalPages > 1 && (
               <div className="mt-12 flex justify-center">
                 <div className="flex items-center gap-2">
-                  <button className="w-10 h-10 flex items-center justify-center rounded-full border border-gray-200 text-gray-400 hover:border-[var(--brand-primary)] hover:text-[var(--brand-primary)] transition-colors cursor-not-allowed opacity-50">
+                  <button
+                    onClick={() => setPage((p) => Math.max(1, p - 1))}
+                    disabled={page === 1}
+                    className="w-10 h-10 flex items-center justify-center rounded-full border border-gray-200 text-gray-400 hover:border-[var(--brand-primary)] hover:text-[var(--brand-primary)] transition-colors disabled:opacity-40"
+                  >
                     <ChevronRight size={18} className="rotate-180" />
                   </button>
-                  <button className="w-10 h-10 flex items-center justify-center rounded-full bg-[var(--brand-primary)] text-white font-bold shadow-md">
-                    1
-                  </button>
-                  <button className="w-10 h-10 flex items-center justify-center rounded-full border border-gray-200 text-gray-700 font-bold hover:border-[var(--brand-primary)] hover:text-[var(--brand-primary)] transition-colors">
-                    2
-                  </button>
-                  <button className="w-10 h-10 flex items-center justify-center rounded-full border border-gray-200 text-gray-700 font-bold hover:border-[var(--brand-primary)] hover:text-[var(--brand-primary)] transition-colors">
-                    3
-                  </button>
-                  <span className="text-gray-400 font-bold px-2">...</span>
-                  <button className="w-10 h-10 flex items-center justify-center rounded-full border border-gray-200 text-gray-700 font-bold hover:border-[var(--brand-primary)] hover:text-[var(--brand-primary)] transition-colors">
-                    12
-                  </button>
-                  <button className="w-10 h-10 flex items-center justify-center rounded-full border border-gray-200 text-gray-700 hover:border-[var(--brand-primary)] hover:text-[var(--brand-primary)] transition-colors">
+                  {Array.from({ length: Math.min(totalPages, 4) }, (_, i) => {
+                    const pageNum = i + 1;
+                    return (
+                      <button
+                        key={pageNum}
+                        onClick={() => setPage(pageNum)}
+                        className={`w-10 h-10 flex items-center justify-center rounded-full font-bold transition-colors ${
+                          pageNum === page
+                            ? "bg-[var(--brand-primary)] text-white shadow-md"
+                            : "border border-gray-200 text-gray-700 hover:border-[var(--brand-primary)] hover:text-[var(--brand-primary)]"
+                        }`}
+                      >
+                        {pageNum}
+                      </button>
+                    );
+                  })}
+                  {totalPages > 4 && <span className="text-gray-400 font-bold px-2">...</span>}
+                  <button
+                    onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                    disabled={page === totalPages}
+                    className="w-10 h-10 flex items-center justify-center rounded-full border border-gray-200 text-gray-700 hover:border-[var(--brand-primary)] hover:text-[var(--brand-primary)] transition-colors disabled:opacity-40"
+                  >
                     <ChevronRight size={18} />
                   </button>
                 </div>
               </div>
+              )}
               
             </div>
           </div>

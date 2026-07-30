@@ -22,17 +22,47 @@ export default function CheckoutPage() {
   const [placing, setPlacing] = useState(false);
   const [error, setError] = useState("");
 
+  const [form, setForm] = useState({
+    fullName: "",
+    phone: "",
+    email: "",
+    address: "",
+    apartment: "",
+    city: "",
+    state: "New York",
+    zip: "",
+  });
+  const setField = (key: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
+    setForm((prev) => ({ ...prev, [key]: e.target.value }));
+
   const shippingCost = shippingMethod === "express" ? 4.99 : shippingMethod === "sameday" ? 9.99 : 0;
   const estimatedTax = subtotal * 0.08;
   const total = subtotal + estimatedTax + shippingCost;
 
+  const buildShippingAddress = () => {
+    const parts = [
+      form.fullName,
+      form.phone,
+      [form.address, form.apartment].filter(Boolean).join(", "),
+      [form.city, form.state, form.zip].filter(Boolean).join(" "),
+    ].filter(Boolean);
+    return parts.join(" | ");
+  };
+
   const placeOrder = async () => {
     setError("");
+
+    if (!form.fullName.trim() || !form.phone.trim() || !form.address.trim() || !form.city.trim() || !form.zip.trim()) {
+      setError("Please fill in your name, phone, address, city and ZIP code.");
+      return;
+    }
+
     setPlacing(true);
-    const res = await checkout();
+    const paymentMap: Record<string, string> = { card: "CARD", paypal: "PAYPAL", apple: "APPLE_PAY", cod: "COD" };
+    const res = await checkout({ shippingAddress: buildShippingAddress(), paymentMethod: paymentMap[paymentMethod] ?? "COD" });
     setPlacing(false);
     if (res.ok) {
-      router.push("/dashboard");
+      router.push("/dashboard?order=success");
     } else {
       setError(res.error || "Checkout failed");
     }
@@ -91,14 +121,14 @@ export default function CheckoutPage() {
                       <label className="text-xs text-gray-500">Full Name</label>
                       <div className="relative">
                         <User size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
-                        <input type="text" placeholder="John Doe" className="w-full border border-gray-200 dark:border-gray-700 rounded-xl py-3 pl-10 pr-4 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all bg-white dark:bg-gray-900" />
+                        <input type="text" value={form.fullName} onChange={setField("fullName")} placeholder="John Doe" className="w-full border border-gray-200 dark:border-gray-700 rounded-xl py-3 pl-10 pr-4 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all bg-white dark:bg-gray-900" />
                       </div>
                     </div>
                     <div className="flex flex-col gap-1.5">
                       <label className="text-xs text-gray-500">Phone Number</label>
                       <div className="relative">
                         <Phone size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
-                        <input type="tel" placeholder="+1 (555) 123-4567" className="w-full border border-gray-200 dark:border-gray-700 rounded-xl py-3 pl-10 pr-4 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all bg-white dark:bg-gray-900" />
+                        <input type="tel" value={form.phone} onChange={setField("phone")} placeholder="+1 (555) 123-4567" className="w-full border border-gray-200 dark:border-gray-700 rounded-xl py-3 pl-10 pr-4 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all bg-white dark:bg-gray-900" />
                       </div>
                     </div>
                   </div>
@@ -107,7 +137,7 @@ export default function CheckoutPage() {
                     <label className="text-xs text-gray-500">Email Address</label>
                     <div className="relative">
                       <Mail size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
-                      <input type="email" placeholder="john.doe@email.com" className="w-full border border-gray-200 dark:border-gray-700 rounded-xl py-3 pl-10 pr-4 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all bg-white dark:bg-gray-900" />
+                      <input type="email" value={form.email} onChange={setField("email")} placeholder="john.doe@email.com" className="w-full border border-gray-200 dark:border-gray-700 rounded-xl py-3 pl-10 pr-4 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all bg-white dark:bg-gray-900" />
                     </div>
                   </div>
 
@@ -116,14 +146,14 @@ export default function CheckoutPage() {
                       <label className="text-xs text-gray-500">Address</label>
                       <div className="relative">
                         <MapPin size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
-                        <input type="text" placeholder="123 Care Leo Street, Downtown" className="w-full border border-gray-200 dark:border-gray-700 rounded-xl py-3 pl-10 pr-4 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all bg-white dark:bg-gray-900" />
+                        <input type="text" value={form.address} onChange={setField("address")} placeholder="123 Care Leo Street, Downtown" className="w-full border border-gray-200 dark:border-gray-700 rounded-xl py-3 pl-10 pr-4 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all bg-white dark:bg-gray-900" />
                       </div>
                     </div>
                     <div className="flex flex-col gap-1.5">
                       <label className="text-xs text-gray-500">Apartment, suite, etc. (optional)</label>
                       <div className="relative">
                         <Building size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
-                        <input type="text" placeholder="Apt 4B" className="w-full border border-gray-200 dark:border-gray-700 rounded-xl py-3 pl-10 pr-4 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all bg-white dark:bg-gray-900" />
+                        <input type="text" value={form.apartment} onChange={setField("apartment")} placeholder="Apt 4B" className="w-full border border-gray-200 dark:border-gray-700 rounded-xl py-3 pl-10 pr-4 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all bg-white dark:bg-gray-900" />
                       </div>
                     </div>
                   </div>
@@ -133,14 +163,14 @@ export default function CheckoutPage() {
                       <label className="text-xs text-gray-500">City</label>
                       <div className="relative">
                         <Map size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
-                        <input type="text" placeholder="New York" className="w-full border border-gray-200 dark:border-gray-700 rounded-xl py-3 pl-10 pr-4 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all bg-white dark:bg-gray-900" />
+                        <input type="text" value={form.city} onChange={setField("city")} placeholder="New York" className="w-full border border-gray-200 dark:border-gray-700 rounded-xl py-3 pl-10 pr-4 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all bg-white dark:bg-gray-900" />
                       </div>
                     </div>
                     <div className="flex flex-col gap-1.5">
                       <label className="text-xs text-gray-500">State</label>
                       <div className="relative">
                         <Map size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
-                        <select className="w-full appearance-none border border-gray-200 dark:border-gray-700 rounded-xl py-3 pl-10 pr-10 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all bg-white dark:bg-gray-900 cursor-pointer">
+                        <select value={form.state} onChange={setField("state")} className="w-full appearance-none border border-gray-200 dark:border-gray-700 rounded-xl py-3 pl-10 pr-10 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all bg-white dark:bg-gray-900 cursor-pointer">
                           <option>New York</option>
                           <option>California</option>
                           <option>Texas</option>
@@ -152,7 +182,7 @@ export default function CheckoutPage() {
                       <label className="text-xs text-gray-500">ZIP Code</label>
                       <div className="relative">
                         <Hash size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
-                        <input type="text" placeholder="10001" className="w-full border border-gray-200 dark:border-gray-700 rounded-xl py-3 pl-10 pr-4 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all bg-white dark:bg-gray-900" />
+                        <input type="text" value={form.zip} onChange={setField("zip")} placeholder="10001" className="w-full border border-gray-200 dark:border-gray-700 rounded-xl py-3 pl-10 pr-4 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all bg-white dark:bg-gray-900" />
                       </div>
                     </div>
                   </div>
@@ -301,8 +331,8 @@ export default function CheckoutPage() {
                   <Link href="/cart" className="flex items-center gap-2 text-sm font-bold text-gray-600 dark:text-gray-400 hover:text-orange-500 transition-colors order-2 sm:order-1">
                     <ArrowLeft size={16} /> Continue Shopping
                   </Link>
-                  <button className="w-full sm:w-auto px-10 py-4 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-bold text-base flex items-center justify-center gap-2 transition-colors order-1 sm:order-2">
-                    <Lock size={18} /> Continue to Payment
+                  <button onClick={placeOrder} disabled={placing || items.length === 0} className="w-full sm:w-auto px-10 py-4 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-bold text-base flex items-center justify-center gap-2 transition-colors order-1 sm:order-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                    <Lock size={18} /> {placing ? "Placing order..." : "Place Order"}
                   </button>
                 </div>
               </div>

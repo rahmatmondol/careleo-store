@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { Suspense, useState } from "react";
 import {
   SlidersHorizontal,
   Star,
@@ -14,11 +14,12 @@ import {
 import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
 import ProductCard from "../../components/ProductCard";
-import { useProducts, formatPrice } from "@/lib/useStore";
+import { useProducts, useCategories, formatPrice } from "@/lib/useStore";
 import { useCart } from "@/lib/CartContext";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
 
-const categories = [
+const categories: { name: string; icon: string; slug?: string }[] = [
   { name: "All Products", icon: "🛍️" },
   { name: "Dog Food", icon: "🦴" },
   { name: "Cat Food", icon: "🐟" },
@@ -30,92 +31,31 @@ const categories = [
   { name: "Smart Products", icon: "📷" },
 ];
 
-type Product = {
-  name: string;
-  price: string;
-  old: string;
-  badge: string;
-  badgeColor: string;
-  rating: number;
-  imageUrl?: string;
-  brand?: string;
-  category?: string;
-};
-
-const _mockProducts: Product[] = [
-  {
-    name: "Care Leo Chicken Recipe Adult Dog Food - 2kg",
-    price: "$24.99",
-    old: "$31.24",
-    badge: "Bestseller",
-    badgeColor: "bg-orange-500",
-    rating: 4.8,
-    imageUrl: "https://images.unsplash.com/photo-1583337130417-3346a1be7dee?w=500&q=80",
-    brand: "Care Leo",
-    category: "Dog Food",
-  },
-  {
-    name: "Royal Canin Maxi Adult Dry Dog Food - 4kg",
-    price: "$54.99",
-    old: "$68.74",
-    badge: "20% OFF",
-    badgeColor: "bg-green-500",
-    rating: 4.7,
-    imageUrl: "https://images.unsplash.com/photo-1581888227599-779811939961?w=500&q=80",
-    brand: "Royal Canin",
-    category: "Dog Food",
-  },
-  {
-    name: "Care Leo Multivitamin Soft Chews - 60 pcs",
-    price: "$19.99",
-    old: "$24.99",
-    badge: "New",
-    badgeColor: "bg-purple-500",
-    rating: 4.9,
-    imageUrl: "https://images.unsplash.com/photo-1576201836106-db1758fd1c97?w=500&q=80",
-    brand: "Care Leo",
-    category: "Health",
-  },
-  {
-    name: "Care Leo Salmon Recipe Cat Food - 1.5kg",
-    price: "$21.59",
-    old: "$26.99",
-    badge: "Care Leo+ Deal",
-    badgeColor: "bg-pink-500",
-    rating: 4.8,
-    imageUrl: "https://images.unsplash.com/photo-1541781774459-bb2af2f05b55?w=500&q=80",
-    brand: "Care Leo",
-    category: "Cat Food",
-  },
-  {
-    name: "Care Leo Octopus Plush Toy for Dogs",
-    price: "$12.99",
-    old: "$16.24",
-    badge: "Best Toy",
-    badgeColor: "bg-cyan-500",
-    rating: 4.7,
-    imageUrl: "https://images.unsplash.com/photo-1583337130417-3346a1be7dee?w=500&q=80",
-    brand: "Care Leo",
-    category: "Toys",
-  },
-  {
-    name: "Greenies Original Dental Treats - 340g",
-    price: "$16.99",
-    old: "$21.24",
-    badge: "20% OFF",
-    badgeColor: "bg-green-500",
-    rating: 4.8,
-    imageUrl: "https://images.unsplash.com/photo-1581888227599-779811939961?w=500&q=80",
-    brand: "Greenies",
-    category: "Treats",
-  },
-];
-
 export default function ShopPage() {
+  return (
+    <Suspense fallback={null}>
+      <ShopContent />
+    </Suspense>
+  );
+}
+
+function ShopContent() {
   const [filterOpen, setFilterOpen] = useState(false);
-  const { products, total, loading } = useProducts({ limit: 24 });
+  const [page, setPage] = useState(1);
+  const [sort, setSort] = useState("Featured");
+  const limit = 12;
+  const searchParams = useSearchParams();
+  const search = searchParams.get("search")?.trim() || "";
+  const { products, total, loading } = useProducts({ page, limit, search });
+  const { categories: realCategories } = useCategories();
   const { addItem } = useCart();
   const router = useRouter();
+
+  const displayCategories = realCategories.length > 0
+    ? realCategories.slice(0, 9).map((c) => ({ name: c.name, icon: "🛍️", slug: c.slug }))
+    : categories;
+
+  const totalPages = Math.max(1, Math.ceil(total / limit));
 
   const handleAddToCart = async (productId: string) => {
     try {
@@ -123,6 +63,11 @@ export default function ShopPage() {
     } catch {
       router.push("/login");
     }
+  };
+
+  const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSort(e.target.value);
+    setPage(1);
   };
 
   return (
@@ -175,15 +120,16 @@ export default function ShopPage() {
           <h2 className="text-xl sm:text-2xl font-black text-gray-900 dark:text-white">
             Shop by Category
           </h2>
-          <button className="text-xs sm:text-sm font-bold text-[var(--brand-primary)] dark:text-[var(--brand-secondary)] hover:underline">
+          <Link href="/categories" className="text-xs sm:text-sm font-bold text-[var(--brand-primary)] dark:text-[var(--brand-secondary)] hover:underline">
             View all categories →
-          </button>
+          </Link>
         </div>
 
         <div className="grid grid-cols-3 gap-2 sm:gap-3 md:grid-cols-5 lg:grid-cols-9">
-          {categories.map((category, index) => (
+          {displayCategories.map((category, index) => (
             <button
               key={category.name}
+              onClick={() => category.slug ? router.push(`/categories/${category.slug}`) : null}
               className={`flex flex-col items-center gap-2 rounded-2xl sm:rounded-3xl border p-3 sm:p-5 text-xs sm:text-sm font-bold shadow-sm transition hover:-translate-y-1 ${
                 index === 0
                   ? "border-[var(--brand-primary)] dark:border-[var(--brand-secondary)] bg-[var(--brand-surface-soft)] dark:bg-gray-800 text-[var(--brand-primary)] dark:text-[var(--brand-secondary)]"
@@ -211,7 +157,21 @@ export default function ShopPage() {
         <div>
           <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
             <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
-              {loading ? "Loading products..." : `Showing ${products.length} of ${total} products`}
+              {loading
+                ? "Loading products..."
+                : `Showing ${products.length} of ${total} products`}
+              {search && !loading && (
+                <>
+                  {" for "}
+                  <span className="font-bold text-gray-900 dark:text-white">
+                    &ldquo;{search}&rdquo;
+                  </span>
+                  {" · "}
+                  <Link href="/shop" className="font-bold text-[var(--brand-primary)] hover:underline">
+                    Clear
+                  </Link>
+                </>
+              )}
             </p>
 
             <div className="flex gap-2 sm:gap-3">
@@ -223,11 +183,15 @@ export default function ShopPage() {
                 Filter
               </button>
 
-              <select className="rounded-full border border-[var(--brand-line)] dark:border-gray-700 bg-white dark:bg-gray-900 px-4 py-2.5 text-xs sm:text-sm font-bold text-gray-700 dark:text-gray-300 shadow-sm">
-                <option>Sort by: Featured</option>
-                <option>Best Selling</option>
-                <option>Price Low to High</option>
-                <option>Newest</option>
+              <select
+                value={sort}
+                onChange={handleSortChange}
+                className="rounded-full border border-[var(--brand-line)] dark:border-gray-700 bg-white dark:bg-gray-900 px-4 py-2.5 text-xs sm:text-sm font-bold text-gray-700 dark:text-gray-300 shadow-sm"
+              >
+                <option value="Featured">Sort by: Featured</option>
+                <option value="Best Selling">Best Selling</option>
+                <option value="Price: Low to High">Price Low to High</option>
+                <option value="Newest">Newest</option>
               </select>
             </div>
           </div>
@@ -246,6 +210,7 @@ export default function ShopPage() {
                 <ProductCard
                   key={product.id}
                   id={product.id}
+                  slug={product.slug}
                   name={product.name}
                   price={formatPrice(product.price)}
                   old={product.compareAtPrice ? formatPrice(product.compareAtPrice) : ""}
@@ -260,19 +225,35 @@ export default function ShopPage() {
           </div>
 
           <div className="mt-10 flex justify-center gap-2 sm:gap-3">
-            {[1, 2, 3, 4].map((page) => (
-              <button
-                key={page}
-                className={`h-10 w-10 sm:h-11 sm:w-11 rounded-full text-sm font-bold transition-colors ${
-                  page === 1
-                    ? "bg-[var(--brand-primary)] text-white shadow-sm"
-                    : "bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 border border-[var(--brand-line)] dark:border-gray-700 shadow-sm hover:bg-[var(--brand-surface-soft)] dark:hover:bg-gray-800"
-                }`}
-              >
-                {page}
-              </button>
-            ))}
-            <button className="h-10 w-10 sm:h-11 sm:w-11 rounded-full border border-[var(--brand-line)] dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 font-bold shadow-sm hover:bg-[var(--brand-surface-soft)] dark:hover:bg-gray-800 flex items-center justify-center">
+            <button
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={page === 1}
+              className="h-10 w-10 sm:h-11 sm:w-11 rounded-full border border-[var(--brand-line)] dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 font-bold shadow-sm hover:bg-[var(--brand-surface-soft)] dark:hover:bg-gray-800 flex items-center justify-center disabled:opacity-40"
+            >
+              <ArrowRight size={16} className="rotate-180" />
+            </button>
+            {Array.from({ length: Math.min(totalPages, 4) }, (_, i) => {
+              const pageNum = i + 1;
+              return (
+                <button
+                  key={pageNum}
+                  onClick={() => setPage(pageNum)}
+                  className={`h-10 w-10 sm:h-11 sm:w-11 rounded-full text-sm font-bold transition-colors ${
+                    pageNum === page
+                      ? "bg-[var(--brand-primary)] text-white shadow-sm"
+                      : "bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 border border-[var(--brand-line)] dark:border-gray-700 shadow-sm hover:bg-[var(--brand-surface-soft)] dark:hover:bg-gray-800"
+                  }`}
+                >
+                  {pageNum}
+                </button>
+              );
+            })}
+            {totalPages > 4 && <span className="text-gray-400 font-bold px-2 self-center">...</span>}
+            <button
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              disabled={page === totalPages}
+              className="h-10 w-10 sm:h-11 sm:w-11 rounded-full border border-[var(--brand-line)] dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 font-bold shadow-sm hover:bg-[var(--brand-surface-soft)] dark:hover:bg-gray-800 flex items-center justify-center disabled:opacity-40"
+            >
               <ArrowRight size={16} />
             </button>
           </div>

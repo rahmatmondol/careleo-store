@@ -1,5 +1,6 @@
 import React from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { Activity, Package, Heart, Bot, ArrowRight, Smile, Calendar } from "lucide-react";
 
 export default function AICareSection() {
@@ -82,9 +83,9 @@ export default function AICareSection() {
           </div>
 
           <div className="mt-10">
-            <button className="brand-primary-button flex items-center gap-2 rounded-full px-8 py-4 text-base font-bold">
+            <Link href="/ai-care" className="brand-primary-button inline-flex items-center gap-2 rounded-full px-8 py-4 text-base font-bold">
               Try Care Leo AI <ArrowRight size={18} />
-            </button>
+            </Link>
           </div>
         </div>
       </div>

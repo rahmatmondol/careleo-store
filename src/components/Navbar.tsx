@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Search, ShoppingCart, Menu, X, ChevronRight } from "lucide-react";
+import { Search, ShoppingCart, Menu, X } from "lucide-react";
 import BrandLogo from "./BrandLogo";
 import MobileMenu from "./MobileMenu";
 import CartSidebar from "./CartSidebar";
@@ -10,10 +10,13 @@ import DesktopSearch from "./navbar/DesktopSearch";
 import MobileSearch from "./navbar/MobileSearch";
 import { useCart } from "@/lib/CartContext";
 
-const navItems = [
-  "Shop",
-  "Subscription",
-  "About",
+const navItems: { label: string; href: string; badge?: string }[] = [
+  { label: "Shop", href: "/shop" },
+  { label: "Subscription", href: "/subscription", badge: "Save More" },
+  { label: "AI Care", href: "/ai-care" },
+  { label: "Services", href: "/services" },
+  { label: "Community", href: "/community" },
+  { label: "About", href: "/about" },
 ];
 
 // Mock database for live search
@@ -59,16 +62,16 @@ export default function Navbar() {
 
             {/* Nav links */}
             <nav className="hidden items-center gap-6 xl:gap-8 text-sm font-bold text-gray-700 lg:flex">
-              {navItems.map((item, index) => (
+              {navItems.map((item) => (
                 <NextLink
-                  key={item}
-                  href={`/${item.toLowerCase()}`}
+                  key={item.label}
+                  href={item.href}
                   className="relative flex items-center whitespace-nowrap hover:text-[var(--brand-primary)] transition-colors"
                 >
-                  {item}
-                  {index === 1 && (
+                  {item.label}
+                  {item.badge && (
                     <span className="absolute -top-3 -right-6 rounded-full bg-[var(--brand-accent)] px-1.5 py-0.5 text-[9px] font-black text-white shadow-sm">
-                      Save More
+                      {item.badge}
                     </span>
                   )}
                 </NextLink>

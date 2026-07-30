@@ -7,7 +7,7 @@ import Link from "next/link";
 import { 
   Trash2, Plus, Minus, ArrowLeft, Lock, ShieldCheck, 
   Sparkles, Truck, RotateCcw, HeadphonesIcon, Star,
-  ChevronRight, ChevronLeft, Package, Apple, ShoppingCart
+  ChevronRight, ChevronLeft, ShoppingCart
 } from "lucide-react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, FreeMode } from "swiper/modules";
@@ -15,21 +15,19 @@ import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/free-mode";
 import { useCart } from "@/lib/CartContext";
-
-const recommendations = [
-  { id: 1, name: "Care Leo Multivitamin Soft Chews - 60 pcs", price: 19.99, old: 24.99, rating: 4.8 },
-  { id: 2, name: "Care Leo Skin & Coat Supplement - 120ml", price: 18.99, old: 23.99, rating: 4.7 },
-  { id: 3, name: "Care Leo Cotton Rope Tug Toy", price: 9.99, old: null, rating: 4.9 },
-  { id: 4, name: "Care Leo Treat Dispenser Ball Toy", price: 11.99, old: null, rating: 4.8 },
-  { id: 5, name: "Care Leo Probiotic Chews - 90 pcs", price: 22.99, old: 27.99, rating: 4.9 },
-];
+import { useProducts, formatPrice } from "@/lib/useStore";
+import ProductImage from "@/components/ProductImage";
 
 export default function CartPage() {
   const router = useRouter();
-  const { items, subtotal, updateItem, removeItem } = useCart();
+  const { items, subtotal, updateItem, removeItem, isAuthenticated, addItem } = useCart();
+  // Real catalogue instead of a hardcoded recommendation list whose
+  // "Add to Cart" buttons did nothing.
+  const { products: recommendations } = useProducts({ limit: 5 });
 
   const cartItems = items.map((it) => ({
     id: it.id,
+    productKey: it.product?.slug || it.productId,
     name: it.product?.name ?? "Product",
     description: it.product?.brand ?? "",
     price: Number(it.product?.price ?? 0),
@@ -47,7 +45,8 @@ export default function CartPage() {
 
   const handleRemove = (id: string) => removeItem(id);
 
-  const goToCheckout = () => router.push("/checkout");
+  const goToCheckout = () =>
+    router.push(isAuthenticated ? "/checkout" : "/login?next=/checkout");
 
   // Calculations
   const careLeoPlusDiscount = 0;
@@ -117,17 +116,22 @@ export default function CartPage() {
                         
                         {/* Product Info */}
                         <div className="col-span-1 md:col-span-6 flex gap-4">
-                          <div className="w-20 h-20 sm:w-24 sm:h-24 bg-[var(--brand-surface-soft)] dark:bg-gray-900 rounded-2xl flex items-center justify-center shrink-0 border border-gray-100 dark:border-gray-800 overflow-hidden">
-                            {item.imageUrl ? (
-                              // eslint-disable-next-line @next/next/no-img-element
-                              <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
-                            ) : (
-                              <Package size={32} className="text-gray-300 dark:text-gray-600" />
-                            )}
+                          <div className="relative w-20 h-20 sm:w-24 sm:h-24 bg-[var(--brand-surface-soft)] dark:bg-gray-900 rounded-2xl flex items-center justify-center shrink-0 border border-gray-100 dark:border-gray-800 overflow-hidden">
+                            <ProductImage
+                              src={item.imageUrl}
+                              alt={item.name}
+                              sizes="96px"
+                              className="object-cover"
+                            />
                           </div>
                           <div className="flex flex-col justify-center">
                             <h3 className="font-bold text-gray-900 dark:text-white text-sm sm:text-base leading-tight mb-2">
-                              <Link href={`/product/${item.id}`} className="hover:text-[var(--brand-primary)] transition-colors">{item.name}</Link>
+                              <Link
+                                href={`/product/${encodeURIComponent(item.productKey)}`}
+                                className="hover:text-[var(--brand-primary)] transition-colors"
+                              >
+                                {item.name}
+                              </Link>
                             </h3>
                             <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">{item.description}</p>
                           </div>
@@ -238,19 +242,15 @@ export default function CartPage() {
                 )}
 
                 <div className="flex flex-col gap-3 mb-6">
-                  <button onClick={goToCheckout} className="w-full h-14 bg-[var(--brand-primary)] hover:bg-orange-600 text-white rounded-full font-bold text-lg flex items-center justify-center gap-2 transition-all shadow-md hover:shadow-lg active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed" disabled={cartItems.length === 0}>
-                    <Lock size={18} /> Proceed to Checkout
+                  <button onClick={goToCheckout} className="w-full h-14 brand-primary-button rounded-full font-bold text-lg flex items-center justify-center gap-2 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed" disabled={cartItems.length === 0}>
+                    <Lock size={18} /> {isAuthenticated ? "Proceed to Checkout" : "Sign In to Checkout"}
                   </button>
-                  <button className="w-full h-14 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white rounded-full font-bold text-lg flex items-center justify-center gap-2 transition-all shadow-sm hover:bg-gray-50 dark:hover:bg-gray-800 hover:shadow-md active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed" disabled={cartItems.length === 0}>
-                    Buy with <Apple size={20} fill="currentColor" /> Pay
-                  </button>
-                </div>
-
-                <div className="relative flex items-center justify-center mb-6">
-                  <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-gray-200 dark:border-gray-800"></div>
-                  </div>
-                  <div className="relative bg-white dark:bg-gray-950 px-4 text-xs font-bold text-gray-400 uppercase">OR</div>
+                  {!isAuthenticated && cartItems.length > 0 && (
+                    <p className="text-center text-xs font-medium text-gray-500 dark:text-gray-400">
+                      Your cart is saved on this device — signing in moves it to your
+                      account.
+                    </p>
+                  )}
                 </div>
 
                 <div className="flex items-start gap-3 bg-gray-50 dark:bg-gray-900/50 p-4 rounded-2xl">
@@ -265,7 +265,8 @@ export default function CartPage() {
           </div>
 
           {/* You might also need Section */}
-          <div className="bg-orange-50/50 dark:bg-orange-900/10 rounded-[32px] p-6 sm:p-8 lg:p-10 border border-orange-100 dark:border-orange-900/30 mb-16">
+          {recommendations.length > 0 && (
+          <div className="bg-[var(--brand-surface-soft)]/60 rounded-[32px] p-6 sm:p-8 lg:p-10 border border-[var(--brand-line)] mb-16">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-white dark:bg-gray-800 rounded-full flex items-center justify-center text-orange-400 shadow-sm">
@@ -301,21 +302,43 @@ export default function CartPage() {
                 {recommendations.map((rec) => (
                   <SwiperSlide key={rec.id}>
                     <div className="bg-white dark:bg-gray-950 rounded-2xl p-4 sm:p-5 flex flex-col h-full border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-md transition-shadow">
-                      <div className="w-full aspect-square bg-[var(--brand-surface-soft)] dark:bg-gray-900 rounded-xl mb-4 flex items-center justify-center">
-                        <Package size={40} className="text-gray-300 dark:text-gray-700" />
-                      </div>
-                      <h3 className="font-bold text-gray-900 dark:text-white text-sm leading-tight mb-2 line-clamp-2">{rec.name}</h3>
-                      <div className="flex items-center gap-1 mb-2">
-                        <div className="flex text-yellow-400">
-                          {[1, 2, 3, 4, 5].map((i) => <Star key={i} size={10} fill={i <= Math.round(rec.rating) ? "currentColor" : "none"} className={i > Math.round(rec.rating) ? "text-gray-300 dark:text-gray-600" : ""} />)}
+                      <Link
+                        href={`/product/${encodeURIComponent(rec.slug || rec.id)}`}
+                        className="relative w-full aspect-square bg-[var(--brand-surface-soft)] dark:bg-gray-900 rounded-xl mb-4 flex items-center justify-center overflow-hidden"
+                      >
+                        <ProductImage
+                          src={rec.imageUrl}
+                          alt={rec.name}
+                          sizes="(max-width: 768px) 50vw, 25vw"
+                          className="object-cover"
+                        />
+                      </Link>
+                      <h3 className="font-bold text-gray-900 dark:text-white text-sm leading-tight mb-2 line-clamp-2">
+                        <Link
+                          href={`/product/${encodeURIComponent(rec.slug || rec.id)}`}
+                          className="hover:text-[var(--brand-primary)] transition-colors"
+                        >
+                          {rec.name}
+                        </Link>
+                      </h3>
+                      {rec.rating > 0 && (
+                        <div className="flex items-center gap-1 mb-2">
+                          <div className="flex text-yellow-400">
+                            {[1, 2, 3, 4, 5].map((i) => <Star key={i} size={10} fill={i <= Math.round(rec.rating) ? "currentColor" : "none"} className={i > Math.round(rec.rating) ? "text-gray-300 dark:text-gray-600" : ""} />)}
+                          </div>
+                          <span className="text-[10px] font-bold text-gray-500">({rec.rating.toFixed(1)})</span>
                         </div>
-                        <span className="text-[10px] font-bold text-gray-500">({rec.rating})</span>
-                      </div>
+                      )}
                       <div className="flex items-end gap-2 mb-4 mt-auto">
-                        <span className="font-black text-gray-900 dark:text-white">${rec.price.toFixed(2)}</span>
-                        {rec.old && <span className="text-xs font-bold text-gray-400 line-through pb-0.5">${rec.old.toFixed(2)}</span>}
+                        <span className="font-black text-gray-900 dark:text-white">{formatPrice(rec.price)}</span>
+                        {rec.compareAtPrice && rec.compareAtPrice > rec.price && (
+                          <span className="text-xs font-bold text-gray-400 line-through pb-0.5">{formatPrice(rec.compareAtPrice)}</span>
+                        )}
                       </div>
-                      <button className="w-full py-2 rounded-full border border-[var(--brand-primary)] text-[var(--brand-primary)] font-bold text-xs flex items-center justify-center gap-1 hover:bg-[var(--brand-primary)] hover:text-white transition-colors">
+                      <button
+                        onClick={() => void addItem(rec.id, 1)}
+                        className="w-full py-2 rounded-full border border-[var(--brand-primary)] text-[var(--brand-primary)] font-bold text-xs flex items-center justify-center gap-1 hover:bg-[var(--brand-primary)] hover:text-white transition-colors"
+                      >
                         <ShoppingCart size={14} /> Add to Cart
                       </button>
                     </div>
@@ -330,6 +353,7 @@ export default function CartPage() {
               </button>
             </div>
           </div>
+          )}
 
           {/* Trust Signals Footer Row */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 py-8 border-t border-gray-200 dark:border-gray-800">

@@ -1,11 +1,15 @@
+"use client";
+
 import React from "react";
-import { Star, PawPrint, ShoppingCart, Heart, Sparkles } from "lucide-react";
+import { Star, PawPrint, ShoppingCart, Heart } from "lucide-react";
 import Link from "next/link";
 
-import Image from "next/image";
+import ProductImage from "./ProductImage";
 
 type ProductCardProps = {
   id?: string;
+  /** Clean URL slug from the catalogue. Preferred over the raw id for links. */
+  slug?: string;
   name: string;
   price: string;
   old: string;
@@ -18,6 +22,7 @@ type ProductCardProps = {
 
 export default function ProductCard({
   id,
+  slug,
   name,
   price,
   old,
@@ -29,8 +34,11 @@ export default function ProductCard({
 }: ProductCardProps) {
   // Generate a pseudo-random hue based on product name for a unique gradient
   const hue = name.length * 15 % 360;
-  const href = id ? `/product/${id}` : `/product/${encodeURIComponent(name)}`;
-  
+  // Never build a URL out of the product name — spaces and "&" break sharing and
+  // used to resolve to whatever product the detail page had hardcoded.
+  const key = slug || id;
+  const href = key ? `/product/${encodeURIComponent(key)}` : null;
+
   return (
       <div className="group flex flex-col rounded-[15px] sm:rounded-[15px] border border-[var(--brand-line)] bg-white p-2.5 sm:p-5 shadow-[0_4px_20px_rgba(90,49,213,0.03)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_40px_rgba(90,49,213,0.12)]">
         <div className="relative mb-2 sm:mb-4 flex h-36 sm:h-64 items-center justify-center rounded-[15px] sm:rounded-[15px] overflow-hidden bg-[var(--brand-surface-soft)]">
@@ -47,21 +55,12 @@ export default function ProductCard({
         
         {/* Product Visual */}
         <div className="relative z-10 flex h-full w-full items-center justify-center overflow-hidden rounded-[15px]">
-          {imageUrl ? (
-            <Image 
-              src={imageUrl} 
-              alt={name} 
-              fill
-              className="object-cover transition-transform duration-500 group-hover:scale-110"
-              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-            />
-          ) : (
-            <div className="relative z-10 flex h-24 w-20 sm:h-40 sm:w-32 flex-col items-center justify-center rounded-[15px] bg-white shadow-lg border border-white/50 transition-transform duration-500 group-hover:scale-105 group-hover:-translate-y-2">
-              <div className="absolute inset-0 rounded-[15px] bg-gradient-to-br from-white to-gray-50 opacity-90" />
-              <Sparkles size={24} className="relative z-10 text-[var(--brand-primary)] mb-2 opacity-50" />
-              <span className="relative z-10 text-[10px] sm:text-xs font-bold text-gray-300 uppercase tracking-widest">Product</span>
-            </div>
-          )}
+          <ProductImage
+            src={imageUrl}
+            alt={name}
+            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+            className="object-cover transition-transform duration-500 group-hover:scale-110"
+          />
         </div>
       </div>
 
@@ -87,11 +86,17 @@ export default function ProductCard({
         </span>
       </div>
 
-      <Link href={href}>
-      <h3 className="mb-1.5 sm:mb-4 flex-1 line-clamp-2 text-xs sm:text-base font-bold leading-snug text-gray-900 group-hover:text-[var(--brand-primary)] transition-colors">
-        {name}
-      </h3>
-      </Link>
+      {href ? (
+        <Link href={href}>
+          <h3 className="mb-1.5 sm:mb-4 flex-1 line-clamp-2 text-xs sm:text-base font-bold leading-snug text-gray-900 group-hover:text-[var(--brand-primary)] transition-colors">
+            {name}
+          </h3>
+        </Link>
+      ) : (
+        <h3 className="mb-1.5 sm:mb-4 flex-1 line-clamp-2 text-xs sm:text-base font-bold leading-snug text-gray-900">
+          {name}
+        </h3>
+      )}
 
       <div className="mb-2 sm:mb-4 brand-accent-chip inline-flex items-center gap-1 self-start rounded-full px-2 py-0.5 sm:px-3 sm:py-1 text-[10px] sm:text-xs font-bold shadow-sm">
         <PawPrint size={10} className="sm:hidden" />

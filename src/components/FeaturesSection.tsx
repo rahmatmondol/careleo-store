@@ -1,4 +1,5 @@
 import React from "react";
+import Link from "next/link";
 import { Package, ArrowRight, Heart, ShieldCheck } from "lucide-react";
 
 export default function FeaturesSection() {
@@ -19,9 +20,9 @@ export default function FeaturesSection() {
             Smart recurring orders for food, treats & essentials. Skip or modify anytime with zero fees.
           </p>
           <div className="mt-auto pt-8 w-full border-t border-[var(--brand-line)]">
-            <button className="flex items-center gap-2 text-sm font-bold text-[var(--brand-primary)] hover:text-[var(--brand-primary-strong)] group">
+            <Link href="/subscription" className="flex items-center gap-2 text-sm font-bold text-[var(--brand-primary)] hover:text-[var(--brand-primary-strong)] group">
               Setup Auto-Order <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
-            </button>
+            </Link>
           </div>
         </div>
 
@@ -34,9 +35,9 @@ export default function FeaturesSection() {
             Share moments, get expert tips, and connect with a loving, verified pet parent community.
           </p>
           <div className="mt-auto pt-8 w-full border-t border-[rgba(255,91,167,0.1)]">
-            <button className="flex items-center gap-2 text-sm font-bold text-[#c2397f] hover:text-[#9e2b65] group">
+            <Link href="/community" className="flex items-center gap-2 text-sm font-bold text-[#c2397f] hover:text-[#9e2b65] group">
               Explore Community <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
-            </button>
+            </Link>
           </div>
         </div>
 
@@ -49,9 +50,9 @@ export default function FeaturesSection() {
             Book top-rated vet appointments, pet walkers and other trusted services right in the app.
           </p>
           <div className="mt-auto pt-8 w-full border-t border-[rgba(245,216,170,0.2)]">
-            <button className="flex items-center gap-2 text-sm font-bold text-[#8c5a16] hover:text-[#6b420d] group">
+            <Link href="/services" className="flex items-center gap-2 text-sm font-bold text-[#8c5a16] hover:text-[#6b420d] group">
               Explore Services <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
-            </button>
+            </Link>
           </div>
         </div>
       </div>

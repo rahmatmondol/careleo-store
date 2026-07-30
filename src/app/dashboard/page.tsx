@@ -20,7 +20,9 @@ import {
   LogOut, 
   ChevronRight,
   Sparkles,
-  Clock
+  Clock,
+  CheckCircle2,
+  X
 } from "lucide-react";
 
 type Order = {
@@ -35,6 +37,17 @@ export default function DashboardPage() {
   const { user, loading, logout } = useAuth();
   const router = useRouter();
   const [orders, setOrders] = useState<Order[]>([]);
+  const [orderPlaced, setOrderPlaced] = useState(false);
+
+  useEffect(() => {
+    // Read the ?order=success flag set by checkout, then strip it from the URL.
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("order") === "success") {
+      setOrderPlaced(true);
+      setActiveTab("orders");
+      window.history.replaceState(null, "", "/dashboard");
+    }
+  }, []);
 
   useEffect(() => {
     if (!loading && !user) router.push("/login");
@@ -84,6 +97,20 @@ export default function DashboardPage() {
             Manage your orders, subscriptions, and pet profiles.
           </p>
         </div>
+
+        {/* Order placed confirmation */}
+        {orderPlaced && (
+          <div className="mb-6 flex items-start gap-3 rounded-2xl border border-green-200 dark:border-green-900/50 bg-green-50 dark:bg-green-900/20 p-4 animate-in fade-in slide-in-from-top-2 duration-300">
+            <CheckCircle2 size={22} className="text-green-600 dark:text-green-400 shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <h3 className="font-bold text-green-800 dark:text-green-300 text-sm">Order placed successfully!</h3>
+              <p className="text-xs text-green-700 dark:text-green-400/80 mt-0.5">Thanks for your order. You can track its status under My Orders below.</p>
+            </div>
+            <button onClick={() => setOrderPlaced(false)} className="text-green-600 dark:text-green-400 hover:opacity-70 transition-opacity shrink-0">
+              <X size={18} />
+            </button>
+          </div>
+        )}
 
         <div className="flex flex-col md:flex-row gap-8 lg:gap-12">
           
