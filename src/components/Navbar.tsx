@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Search, ShoppingCart, Menu, X } from "lucide-react";
 import BrandLogo from "./BrandLogo";
 import MobileMenu from "./MobileMenu";
@@ -35,6 +35,11 @@ export default function Navbar() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const searchResults = searchQuery.trim().length > 0 
     ? mockProducts.filter(item => item.name.toLowerCase().includes(searchQuery.toLowerCase()))
@@ -111,7 +116,7 @@ export default function Navbar() {
               className="relative flex h-11 w-11 items-center justify-center rounded-full border border-[var(--brand-line)] bg-white hover:bg-[var(--brand-surface-soft)] transition-colors"
             >
               <ShoppingCart size={20} className="text-gray-700" />
-              {count > 0 && (
+              {isMounted && count > 0 && (
                 <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full border-2 border-white bg-[var(--brand-accent)] text-[10px] font-bold text-white">
                   {count}
                 </span>

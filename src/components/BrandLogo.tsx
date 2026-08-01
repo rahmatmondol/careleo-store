@@ -19,6 +19,8 @@ export default function BrandLogo({
         width={120}
         height={40}
         priority={priority}
+        className={className}
+        style={{ width: 'auto', height: 'auto' }}
       />
     );
   }
@@ -30,6 +32,8 @@ export default function BrandLogo({
       width={120}
       height={40}
       priority={priority}
+      className={className}
+      style={{ width: 'auto', height: 'auto' }}
     />
   );
 }

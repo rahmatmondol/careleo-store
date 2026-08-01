@@ -12,7 +12,12 @@ type CartSidebarProps = {
 
 export default function CartSidebar({ open, onClose }: CartSidebarProps) {
   const router = useRouter();
+  const [isMounted, setIsMounted] = React.useState(false);
   const { items, count, subtotal, updateItem, removeItem } = useCart();
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   useEffect(() => {
     if (open) {
@@ -24,6 +29,10 @@ export default function CartSidebar({ open, onClose }: CartSidebarProps) {
       document.body.style.overflow = "";
     };
   }, [open]);
+
+  if (!isMounted) {
+    return null;
+  }
 
   const goToCheckout = () => {
     onClose();
