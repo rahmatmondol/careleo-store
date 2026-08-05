@@ -16,19 +16,19 @@ jobs:
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: 76.13.30.119
-          username: ubuntu
+          username: root
           key: ${{ secrets.DEPLOY_SSH_KEY }}
           script: |
             set -e
-            cd ~/careleo-deploy/careleo-store
+            cd /root/careleo-deploy/careleo-store
 
             echo "📦 Pulling latest code..."
             git pull origin main
 
             echo "🔨 Building Docker image..."
-            docker compose -f ~/careleo-deploy/docker-compose.prod.yml build store
+            docker compose -f /root/careleo-deploy/docker-compose.prod.yml build store
 
             echo "🚀 Restarting store container..."
-            docker compose -f ~/careleo-deploy/docker-compose.prod.yml up -d store
+            docker compose -f /root/careleo-deploy/docker-compose.prod.yml up -d store
 
             echo "✅ Deployment complete!"
